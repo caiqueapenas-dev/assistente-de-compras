@@ -16,8 +16,21 @@ import {
   Package,
   Store,
   Calendar,
+  AlertCircle,
+  CheckCircle,
+  Minus,
+  Info,
 } from "lucide-react";
 import DATABASE from "./database.json";
+
+// Função auxiliar para normalizar strings (remover acentos e converter para minúsculas)
+const normalizeString = (str) => {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
 
 // Componente Principal da Aplicação
 export default function App() {
@@ -35,13 +48,13 @@ export default function App() {
   const [shoppingList, setShoppingList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [modal, setModal] = useState({ isOpen: false, type: "", data: null });
+  const [toast, setToast] = useState({ isVisible: false, message: "" });
 
   // Autosave a cada 30 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       try {
         localStorage.setItem("marketHelperData", JSON.stringify(data));
-        console.log("Dados salvos automaticamente!");
       } catch (error) {
         console.error("Erro ao salvar dados no localStorage", error);
       }
@@ -49,8 +62,25 @@ export default function App() {
     return () => clearInterval(interval);
   }, [data]);
 
-  const handleDataChange = (newData) => {
+  // Efeito para esconder o Toast Notification
+  useEffect(() => {
+    if (toast.isVisible) {
+      const timer = setTimeout(() => {
+        setToast({ isVisible: false, message: "" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = (message) => {
+    setToast({ isVisible: true, message });
+  };
+
+  const handleDataChange = (newData, successMessage) => {
     setData(newData);
+    if (successMessage) {
+      showToast(successMessage);
+    }
   };
 
   const handleExport = () => {
@@ -71,7 +101,6 @@ export default function App() {
     fileReader.onload = (e) => {
       try {
         const importedData = JSON.parse(e.target.result);
-        // Validação básica da estrutura do JSON importado
         if (
           importedData.products &&
           importedData.stores &&
@@ -79,7 +108,7 @@ export default function App() {
           importedData.purchases
         ) {
           setData(importedData);
-          alert("Dados importados com sucesso!");
+          showToast("Dados importados com sucesso!");
         } else {
           alert(
             "Arquivo de backup inválido. A estrutura dos dados está incorreta."
@@ -90,6 +119,7 @@ export default function App() {
         console.error("Erro ao importar JSON:", error);
       }
     };
+    event.target.value = null; // Limpar o input para permitir re-importação do mesmo arquivo
   };
 
   const addToShoppingList = (product) => {
@@ -104,19 +134,18 @@ export default function App() {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
+    showToast(`${product.name} adicionado à lista!`);
   };
 
-  const updateShoppingListQuantity = (productId, quantity) => {
-    const q = parseInt(quantity, 10);
-    if (q <= 0) {
-      setShoppingList((prev) => prev.filter((item) => item.id !== productId));
-    } else {
-      setShoppingList((prev) =>
-        prev.map((item) =>
-          item.id === productId ? { ...item, quantity: q } : item
-        )
+  const updateShoppingListQuantity = (productId, change) => {
+    setShoppingList((prev) => {
+      const updatedList = prev.map((item) =>
+        item.id === productId
+          ? { ...item, quantity: Math.max(0, item.quantity + change) }
+          : item
       );
-    }
+      return updatedList.filter((item) => item.quantity > 0);
+    });
   };
 
   const openModal = (type, modalData = null) => {
@@ -136,11 +165,10 @@ export default function App() {
             searchTerm={searchTerm}
             onAddToShoppingList={addToShoppingList}
             onOpenModal={openModal}
-            onDataChange={handleDataChange}
           />
         );
       case "galpao":
-        return <Galpao data={data} />;
+        return <Galpao data={data} onOpenModal={openModal} />;
       case "lista":
         return (
           <ShoppingListView
@@ -158,7 +186,6 @@ export default function App() {
             searchTerm={searchTerm}
             onAddToShoppingList={addToShoppingList}
             onOpenModal={openModal}
-            onDataChange={handleDataChange}
           />
         );
     }
@@ -166,98 +193,114 @@ export default function App() {
 
   return (
     <div className="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen font-sans">
+      <Toast message={toast.message} isVisible={toast.isVisible} />
       <div className="flex flex-col md:flex-row">
-        {/* Sidebar */}
-        <aside className="w-full md:w-64 bg-white dark:bg-gray-800 p-4 space-y-4 border-b md:border-r border-gray-200 dark:border-gray-700">
-          <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-            <ShoppingCart size={28} />
-            Compras
-          </h1>
-          <nav className="space-y-2">
-            <NavItem
-              icon={<Package size={20} />}
-              text="Dashboard"
-              active={activeView === "dashboard"}
-              onClick={() => setActiveView("dashboard")}
-            />
-            <NavItem
-              icon={<Store size={20} />}
-              text="Galpão"
-              active={activeView === "galpao"}
-              onClick={() => setActiveView("galpao")}
-            />
-            <NavItem
-              icon={<List size={20} />}
-              text="Lista de Compras"
-              active={activeView === "lista"}
-              onClick={() => setActiveView("lista")}
-              badge={shoppingList.length}
-            />
-            <NavItem
-              icon={<Archive size={20} />}
-              text="Histórico"
-              active={activeView === "historico"}
-              onClick={() => setActiveView("historico")}
-            />
-          </nav>
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-            <button
-              onClick={handleExport}
-              className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-            >
-              <Download size={18} /> Exportar Backup
-            </button>
-            <label className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors cursor-pointer">
-              <Upload size={18} /> Importar Backup
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImport}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </aside>
+        <Sidebar
+          activeView={activeView}
+          setActiveView={setActiveView}
+          shoppingListBadge={shoppingList.length}
+          onExport={handleExport}
+          onImport={handleImport}
+        />
 
-        {/* Main Content */}
         <main className="flex-1 p-4 md:p-6 lg:p-8">
-          <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <div className="relative w-full md:w-1/2">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <input
-                type="text"
-                placeholder="Pesquisar por nome ou marca..."
-                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <button
-              onClick={() => openModal("addProduct")}
-              className="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
-            >
-              <Plus size={20} /> Adicionar Produto
-            </button>
-          </header>
+          {activeView !== "lista" && (
+            <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+              <div className="relative w-full md:w-1/2">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
+                <input
+                  type="text"
+                  placeholder="Pesquisar por nome ou marca..."
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => openModal("addEditProduct")}
+                className="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+              >
+                <Plus size={20} /> Adicionar Produto
+              </button>
+            </header>
+          )}
           {renderView()}
         </main>
       </div>
-      {modal.isOpen && (
-        <Modal
-          modal={modal}
-          onClose={closeModal}
-          data={data}
-          onDataChange={handleDataChange}
-        />
-      )}
+      <ModalManager
+        modal={modal}
+        onClose={closeModal}
+        data={data}
+        onDataChange={handleDataChange}
+      />
     </div>
   );
 }
 
-// Componente de Item de Navegação
+// --- SUB-COMPONENTES ---
+
+const Sidebar = ({
+  activeView,
+  setActiveView,
+  shoppingListBadge,
+  onExport,
+  onImport,
+}) => (
+  <aside className="w-full md:w-64 bg-white dark:bg-gray-800 p-4 space-y-4 border-b md:border-r border-gray-200 dark:border-gray-700">
+    <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+      <ShoppingCart size={28} />
+      Compras
+    </h1>
+    <nav className="space-y-2">
+      <NavItem
+        icon={<Package size={20} />}
+        text="Dashboard"
+        active={activeView === "dashboard"}
+        onClick={() => setActiveView("dashboard")}
+      />
+      <NavItem
+        icon={<Store size={20} />}
+        text="Galpão"
+        active={activeView === "galpao"}
+        onClick={() => setActiveView("galpao")}
+      />
+      <NavItem
+        icon={<List size={20} />}
+        text="Lista de Compras"
+        active={activeView === "lista"}
+        onClick={() => setActiveView("lista")}
+        badge={shoppingListBadge}
+      />
+      <NavItem
+        icon={<Archive size={20} />}
+        text="Histórico"
+        active={activeView === "historico"}
+        onClick={() => setActiveView("historico")}
+      />
+    </nav>
+    <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+      <button
+        onClick={onExport}
+        className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      >
+        <Download size={18} /> Exportar Backup
+      </button>
+      <label className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors cursor-pointer">
+        <Upload size={18} /> Importar Backup
+        <input
+          type="file"
+          accept=".json"
+          onChange={onImport}
+          className="hidden"
+        />
+      </label>
+    </div>
+  </aside>
+);
+
 const NavItem = ({ icon, text, active, onClick, badge }) => (
   <button
     onClick={onClick}
@@ -277,44 +320,32 @@ const NavItem = ({ icon, text, active, onClick, badge }) => (
   </button>
 );
 
-// Componente Dashboard
-const Dashboard = ({
-  data,
-  searchTerm,
-  onAddToShoppingList,
-  onOpenModal,
-  onDataChange,
-}) => {
+const Dashboard = ({ data, searchTerm, onAddToShoppingList, onOpenModal }) => {
+  const getCheapestPriceInfo = (productId) => {
+    const productPrices = data.prices.filter((p) => p.productId === productId);
+    if (productPrices.length === 0) return null;
+    if (productPrices.length === 1) {
+      const store = data.stores.find((s) => s.id === productPrices[0].storeId);
+      return { text: `em ${store?.name}`, color: "text-gray-500" };
+    }
+    const cheapest = productPrices.reduce((min, p) =>
+      p.price < min.price ? p : min
+    );
+    const store = data.stores.find((s) => s.id === cheapest.storeId);
+    return {
+      text: `Mais barato em ${store?.name}`,
+      color: "text-green-500 font-semibold",
+    };
+  };
+
   const filteredProducts = useMemo(() => {
+    const normalizedSearch = normalizeString(searchTerm);
     return data.products.filter(
       (p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchTerm.toLowerCase())
+        normalizeString(p.name).includes(normalizedSearch) ||
+        normalizeString(p.brand).includes(normalizedSearch)
     );
   }, [data.products, searchTerm]);
-
-  const handleDeleteProduct = (productId) => {
-    if (
-      window.confirm(
-        "Tem certeza que deseja excluir este produto e todos os seus preços e históricos de compra? Esta ação não pode ser desfeita."
-      )
-    ) {
-      const newData = {
-        ...data,
-        products: data.products.filter((p) => p.id !== productId),
-        prices: data.prices.filter((p) => p.productId !== productId),
-        purchases: data.purchases
-          .map((purchase) => ({
-            ...purchase,
-            items: purchase.items.filter(
-              (item) => item.productId !== productId
-            ),
-          }))
-          .filter((purchase) => purchase.items.length > 0),
-      };
-      onDataChange(newData);
-    }
-  };
 
   return (
     <div>
@@ -323,7 +354,8 @@ const Dashboard = ({
         {filteredProducts.map((product) => (
           <div
             key={product.id}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105"
+            onClick={() => onOpenModal("productDetail", product)}
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105 cursor-pointer"
           >
             <img
               src={product.photo}
@@ -336,31 +368,29 @@ const Dashboard = ({
               }}
             />
             <div className="p-4">
-              <h3 className="font-bold text-lg">{product.name}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <h3 className="font-bold text-lg truncate">{product.name}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                 {product.brand}
               </p>
               <p className="text-xs bg-gray-200 dark:bg-gray-700 inline-block px-2 py-1 rounded-full mt-2">
                 {product.category}
               </p>
+              {getCheapestPriceInfo(product.id) && (
+                <p
+                  className={`text-xs mt-2 ${
+                    getCheapestPriceInfo(product.id).color
+                  }`}
+                >
+                  {getCheapestPriceInfo(product.id).text}
+                </p>
+              )}
             </div>
-            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 flex justify-between items-center">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onOpenModal("editProduct", product)}
-                  className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400"
-                >
-                  <Edit size={18} />
-                </button>
-                <button
-                  onClick={() => handleDeleteProduct(product.id)}
-                  className="p-2 text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
+            <div className="p-2 bg-gray-50 dark:bg-gray-700/50 flex justify-end items-center">
               <button
-                onClick={() => onAddToShoppingList(product)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToShoppingList(product);
+                }}
                 className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-1 px-3 rounded-lg text-sm flex items-center gap-1"
               >
                 <Plus size={16} /> Lista
@@ -373,38 +403,57 @@ const Dashboard = ({
   );
 };
 
-// Componente Galpão
-const Galpao = ({ data }) => {
+const Galpao = ({ data, onOpenModal }) => {
   const [selectedStoreId, setSelectedStoreId] = useState(data.stores[0]?.id);
+  const [activeTab, setActiveTab] = useState("registrados");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const productsByStore = useMemo(() => {
-    if (!selectedStoreId) return [];
+  const { registered, unregistered } = useMemo(() => {
+    if (!selectedStoreId) return { registered: [], unregistered: [] };
 
-    return data.products.map((product) => {
+    const reg = [];
+    const unreg = [];
+
+    data.products.forEach((product) => {
       const priceInfo = data.prices.find(
         (p) => p.productId === product.id && p.storeId === selectedStoreId
       );
-      const isOutdated =
-        priceInfo &&
-        (new Date() - new Date(priceInfo.lastUpdated)) /
-          (1000 * 60 * 60 * 24 * 30) >
+      if (priceInfo) {
+        const isOutdated =
+          (new Date() - new Date(priceInfo.lastUpdated)) /
+            (1000 * 60 * 60 * 24 * 30) >
           2;
-
-      return {
-        ...product,
-        price: priceInfo ? priceInfo.price : null,
-        lastUpdated: priceInfo ? priceInfo.lastUpdated : null,
-        isOutdated,
-      };
+        reg.push({
+          ...product,
+          price: priceInfo.price,
+          lastUpdated: priceInfo.lastUpdated,
+          isOutdated,
+        });
+      } else {
+        unreg.push({
+          ...product,
+          price: null,
+          lastUpdated: null,
+          isOutdated: false,
+        });
+      }
     });
+
+    return { registered: reg, unregistered: unreg };
   }, [data, selectedStoreId]);
+
+  const normalizedSearch = normalizeString(searchTerm);
+  const listToDisplay = activeTab === "registrados" ? registered : unregistered;
+  const filteredList = listToDisplay.filter(
+    (p) =>
+      normalizeString(p.name).includes(normalizedSearch) ||
+      normalizeString(p.brand).includes(normalizedSearch)
+  );
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">
-        Galpão de Produtos por Mercado
-      </h2>
-      <div className="mb-4">
+      <h2 className="text-2xl font-semibold mb-4">Galpão por Mercado</h2>
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
         <select
           value={selectedStoreId}
           onChange={(e) => setSelectedStoreId(e.target.value)}
@@ -416,7 +465,51 @@ const Galpao = ({ data }) => {
             </option>
           ))}
         </select>
+        <div className="relative flex-grow">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Pesquisar..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
       </div>
+
+      <div className="border-b border-gray-200 dark:border-gray-700 mb-4">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab("registrados")}
+            className={`${
+              activeTab === "registrados"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+          >
+            Registrados
+          </button>
+          <button
+            onClick={() => setActiveTab("nao-registrados")}
+            className={`${
+              activeTab === "nao-registrados"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            } flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+          >
+            Não Registrados
+            {unregistered.length > 0 && (
+              <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {unregistered.length}
+              </span>
+            )}
+          </button>
+        </nav>
+      </div>
+
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
         <table className="w-full text-left">
           <thead className="bg-gray-50 dark:bg-gray-700">
@@ -428,8 +521,12 @@ const Galpao = ({ data }) => {
             </tr>
           </thead>
           <tbody>
-            {productsByStore.map((product) => (
-              <tr key={product.id} className="border-b dark:border-gray-700">
+            {filteredList.map((product) => (
+              <tr
+                key={product.id}
+                className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                onClick={() => onOpenModal("productDetail", product)}
+              >
                 <td className="p-4 flex items-center gap-3">
                   <img
                     src={product.photo}
@@ -477,15 +574,13 @@ const Galpao = ({ data }) => {
   );
 };
 
-// Componente Lista de Compras
 const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
-  const { optimalList, savings } = useMemo(() => {
-    if (shoppingList.length === 0) {
-      return { optimalList: {}, savings: [] };
-    }
+  const { optimalList, savings, totalOptimalCost } = useMemo(() => {
+    if (shoppingList.length === 0)
+      return { optimalList: {}, savings: [], totalOptimalCost: 0 };
 
     let optimal = {};
-    let totalOptimalCost = 0;
+    let totalCost = 0;
 
     shoppingList.forEach((item) => {
       const pricesForProduct = data.prices.filter(
@@ -498,18 +593,19 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
         const storeName = data.stores.find(
           (s) => s.id === bestPrice.storeId
         ).name;
-
-        if (!optimal[storeName]) {
-          optimal[storeName] = { storeId: bestPrice.storeId, items: [] };
-        }
+        if (!optimal[storeName])
+          optimal[storeName] = {
+            storeId: bestPrice.storeId,
+            items: [],
+            total: 0,
+          };
         optimal[storeName].items.push({ ...item, unitPrice: bestPrice.price });
-        totalOptimalCost += bestPrice.price * item.quantity;
+        optimal[storeName].total += bestPrice.price * item.quantity;
+        totalCost += bestPrice.price * item.quantity;
       } else {
-        // Produto sem preço registrado em nenhum mercado
         const unknownStore = "Mercado não encontrado";
-        if (!optimal[unknownStore]) {
-          optimal[unknownStore] = { storeId: null, items: [] };
-        }
+        if (!optimal[unknownStore])
+          optimal[unknownStore] = { storeId: null, items: [], total: 0 };
         optimal[unknownStore].items.push({ ...item, unitPrice: 0 });
       }
     });
@@ -518,37 +614,35 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
       .map((store) => {
         let totalAtThisStore = 0;
         let canCalculate = true;
-
         shoppingList.forEach((item) => {
           const priceAtThisStore = data.prices.find(
             (p) => p.productId === item.id && p.storeId === store.id
           );
-          if (priceAtThisStore) {
+          if (priceAtThisStore)
             totalAtThisStore += priceAtThisStore.price * item.quantity;
-          } else {
-            canCalculate = false;
-          }
+          else canCalculate = false;
         });
-
-        if (canCalculate) {
+        if (canCalculate)
           return {
             storeName: store.name,
             total: totalAtThisStore,
-            saved: totalAtThisStore - totalOptimalCost,
+            saved: totalAtThisStore - totalCost,
           };
-        }
         return null;
       })
       .filter((s) => s !== null);
 
-    return { optimalList: optimal, savings: calculatedSavings };
+    return {
+      optimalList: optimal,
+      savings: calculatedSavings,
+      totalOptimalCost: totalCost,
+    };
   }, [data, shoppingList]);
 
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">Lista de Compras</h2>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Coluna 1: Itens a comprar */}
         <div className="lg:col-span-1 space-y-4">
           <h3 className="font-semibold text-lg">Itens</h3>
           {shoppingList.length === 0 ? (
@@ -566,20 +660,29 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
                     <p className="font-semibold">{item.name}</p>
                     <p className="text-sm text-gray-500">{item.brand}</p>
                   </div>
-                  <input
-                    type="number"
-                    min="0"
-                    value={item.quantity}
-                    onChange={(e) => onUpdateQuantity(item.id, e.target.value)}
-                    className="w-16 text-center bg-gray-100 dark:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600"
-                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onUpdateQuantity(item.id, -1)}
+                      className="p-1 rounded-full bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <span className="w-8 text-center font-semibold">
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() => onUpdateQuantity(item.id, 1)}
+                      className="p-1 rounded-full bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Coluna 2: Lista Otimizada */}
         <div className="lg:col-span-2 space-y-4">
           <h3 className="font-semibold text-lg">
             Compra Otimizada por Mercado
@@ -593,14 +696,15 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
                   key={storeName}
                   className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow"
                 >
-                  <h4 className="font-bold text-indigo-600 dark:text-indigo-400 mb-2">
-                    {storeName}
+                  <h4 className="font-bold text-indigo-600 dark:text-indigo-400 mb-2 flex justify-between">
+                    <span>{storeName}</span>
+                    <span>Total: R$ {details.total.toFixed(2)}</span>
                   </h4>
                   <ul className="space-y-2">
                     {details.items.map((item) => (
                       <li
                         key={item.id}
-                        className="flex justify-between items-baseline"
+                        className="flex justify-between items-baseline text-sm"
                       >
                         <span>
                           {item.quantity}x {item.name} ({item.brand})
@@ -620,7 +724,6 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
             </div>
           )}
 
-          {/* Coluna 3: Economia */}
           {savings.length > 0 && (
             <div className="mt-8">
               <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
@@ -628,15 +731,7 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
               </h3>
               <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg shadow">
                 <p className="text-lg font-bold text-green-700 dark:text-green-300 mb-2">
-                  Total Otimizado: R${" "}
-                  {savings.reduce((acc, s) => (s.saved < acc.saved ? s : acc), {
-                    saved: Infinity,
-                  }).total -
-                    savings
-                      .reduce((acc, s) => (s.saved < acc.saved ? s : acc), {
-                        saved: Infinity,
-                      })
-                      .saved.toFixed(2)}
+                  Total Otimizado: R$ {totalOptimalCost.toFixed(2)}
                 </p>
                 <p className="text-sm mb-4">
                   Comparado a comprar tudo em um único mercado:
@@ -667,10 +762,8 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
   );
 };
 
-// Componente Histórico
 const History = ({ data }) => {
   const { stores, purchases, products } = data;
-
   const getStoreName = (storeId) =>
     stores.find((s) => s.id === storeId)?.name || "Desconhecido";
   const getProductDetails = (productId) =>
@@ -695,10 +788,10 @@ const History = ({ data }) => {
                   <p className="font-bold text-lg">
                     {getStoreName(purchase.storeId)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <Calendar size={14} className="inline mr-1" />
-                    {new Date(purchase.date).toLocaleDateString()} -
-                    <span className="ml-1 font-semibold">{purchase.type}</span>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <Calendar size={14} />
+                    {new Date(purchase.date).toLocaleDateString()} -{" "}
+                    <span className="font-semibold">{purchase.type}</span>
                   </p>
                 </div>
                 <p className="font-bold text-xl text-indigo-600 dark:text-indigo-400">
@@ -736,22 +829,185 @@ const History = ({ data }) => {
   );
 };
 
-// Componente Modal
-const Modal = ({ modal, onClose, data, onDataChange }) => {
-  const [formData, setFormData] = useState({});
+const Toast = ({ message, isVisible }) => {
+  if (!isVisible) return null;
+  return (
+    <div className="fixed top-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in-out z-50">
+      <CheckCircle size={20} />
+      <span>{message}</span>
+    </div>
+  );
+};
 
-  useEffect(() => {
-    if (modal.type === "editProduct" && modal.data) {
-      setFormData(modal.data);
-    } else if (modal.type === "addProduct") {
-      setFormData({
-        name: "",
-        brand: "",
-        category: data.categories[0] || "",
-        photo: "",
-      });
+// --- MODAIS ---
+
+const ModalManager = ({ modal, onClose, data, onDataChange }) => {
+  if (!modal.isOpen) return null;
+
+  const renderModalContent = () => {
+    switch (modal.type) {
+      case "productDetail":
+        return (
+          <ProductDetailModal
+            product={modal.data}
+            allData={data}
+            onClose={onClose}
+            onDataChange={onDataChange}
+          />
+        );
+      case "addEditProduct":
+        return (
+          <AddEditProductForm
+            productToEdit={modal.data}
+            allData={data}
+            onClose={onClose}
+            onDataChange={onDataChange}
+          />
+        );
+      case "deleteConfirmation":
+        return (
+          <DeleteConfirmationModal
+            item={modal.data}
+            allData={data}
+            onClose={onClose}
+            onDataChange={onDataChange}
+          />
+        );
+      default:
+        return null;
     }
-  }, [modal, data.categories]);
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-40 p-4"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl relative animate-scale-in"
+      >
+        {renderModalContent()}
+      </div>
+    </div>
+  );
+};
+
+const ProductDetailModal = ({ product, allData, onClose, onDataChange }) => {
+  const [modal, setModal] = useState({ isOpen: false, type: "", data: null });
+  const prices = allData.prices.filter((p) => p.productId === product.id);
+
+  const openSubModal = (type, data) => setModal({ isOpen: true, type, data });
+  const closeSubModal = () => setModal({ isOpen: false, type: "", data: null });
+
+  return (
+    <>
+      <div className="p-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          <img
+            src={product.photo}
+            alt={product.name}
+            className="w-full md:w-1/3 h-auto object-cover rounded-lg"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src =
+                "https://placehold.co/200x200/e2e8f0/4a5568?text=Imagem";
+            }}
+          />
+          <div className="flex-1">
+            <h2 className="text-3xl font-bold">{product.name}</h2>
+            <p className="text-lg text-gray-500 dark:text-gray-400">
+              {product.brand}
+            </p>
+            <span className="text-sm bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 inline-block px-3 py-1 rounded-full mt-2">
+              {product.category}
+            </span>
+
+            <h3 className="text-xl font-semibold mt-6 mb-2">
+              Preços Registrados
+            </h3>
+            <div className="space-y-2">
+              {prices.length > 0 ? (
+                prices.map((price) => {
+                  const store = allData.stores.find(
+                    (s) => s.id === price.storeId
+                  );
+                  return (
+                    <div
+                      key={store.id}
+                      className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-md"
+                    >
+                      <span className="font-medium">{store.name}</span>
+                      <span className="font-bold text-lg">
+                        R$ {price.price.toFixed(2)}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-gray-500">
+                  Nenhum preço registrado para este produto.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 flex justify-end gap-3 rounded-b-lg">
+        <button
+          type="button"
+          onClick={() =>
+            openSubModal("deleteConfirmation", {
+              id: product.id,
+              name: product.name,
+            })
+          }
+          className="btn-danger flex items-center gap-2"
+        >
+          <Trash2 size={18} /> Excluir
+        </button>
+        <button
+          type="button"
+          onClick={() => openSubModal("addEditProduct", product)}
+          className="btn-primary flex items-center gap-2"
+        >
+          <Edit size={18} /> Editar
+        </button>
+        <button type="button" onClick={onClose} className="btn-secondary">
+          Fechar
+        </button>
+      </div>
+      {/* Sub-modal para edição/exclusão */}
+      {modal.isOpen && (
+        <ModalManager
+          modal={modal}
+          onClose={closeSubModal}
+          data={allData}
+          onDataChange={(newData, msg) => {
+            onDataChange(newData, msg);
+            onClose();
+          }}
+        />
+      )}
+    </>
+  );
+};
+
+const AddEditProductForm = ({
+  productToEdit,
+  allData,
+  onClose,
+  onDataChange,
+}) => {
+  const [formData, setFormData] = useState(
+    productToEdit || {
+      name: "",
+      brand: "",
+      category: allData.categories[0] || "",
+      photo: "",
+    }
+  );
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -762,8 +1018,19 @@ const Modal = ({ modal, onClose, data, onDataChange }) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, photo: reader.result }));
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          if (img.height > img.width) {
+            setError(
+              "Imagem vertical não suportada. Por favor, escolha uma imagem horizontal ou quadrada."
+            );
+          } else {
+            setError("");
+            setFormData((prev) => ({ ...prev, photo: event.target.result }));
+          }
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     }
@@ -771,45 +1038,35 @@ const Modal = ({ modal, onClose, data, onDataChange }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (modal.type === "addProduct") {
+    if (productToEdit) {
+      const updatedProducts = allData.products.map((p) =>
+        p.id === productToEdit.id ? formData : p
+      );
+      onDataChange(
+        { ...allData, products: updatedProducts },
+        "Produto atualizado com sucesso!"
+      );
+    } else {
       const newProduct = { ...formData, id: `p${Date.now()}` };
-      const newPhoto =
-        newProduct.photo ||
-        `https://placehold.co/100x100/e2e8f0/4a5568?text=${encodeURIComponent(
+      if (!newProduct.photo)
+        newProduct.photo = `https://placehold.co/100x100/e2e8f0/4a5568?text=${encodeURIComponent(
           newProduct.name
         )}`;
-      onDataChange({
-        ...data,
-        products: [...data.products, { ...newProduct, photo: newPhoto }],
-      });
-    } else if (modal.type === "editProduct") {
-      onDataChange({
-        ...data,
-        products: data.products.map((p) =>
-          p.id === formData.id ? formData : p
-        ),
-      });
+      onDataChange(
+        { ...allData, products: [...allData.products, newProduct] },
+        "Produto adicionado com sucesso!"
+      );
     }
     onClose();
   };
 
-  if (!modal.isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
-        >
-          <X size={24} />
-        </button>
+    <form onSubmit={handleSubmit}>
+      <div className="p-6">
         <h2 className="text-xl font-bold mb-4">
-          {modal.type === "addProduct"
-            ? "Adicionar Novo Produto"
-            : "Editar Produto"}
+          {productToEdit ? "Editar Produto" : "Adicionar Novo Produto"}
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">
               Nome do Produto
@@ -842,7 +1099,7 @@ const Modal = ({ modal, onClose, data, onDataChange }) => {
               onChange={handleChange}
               className="w-full input-style"
             >
-              {data.categories.map((cat) => (
+              {allData.categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
@@ -867,36 +1124,74 @@ const Modal = ({ modal, onClose, data, onDataChange }) => {
               onChange={handleFileChange}
               className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
             />
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Cancelar
-            </button>
-            <button type="submit" className="btn-primary">
-              Salvar
-            </button>
+        </div>
+      </div>
+      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 flex justify-end gap-3 rounded-b-lg">
+        <button type="button" onClick={onClose} className="btn-secondary">
+          Cancelar
+        </button>
+        <button type="submit" className="btn-primary">
+          Salvar
+        </button>
+      </div>
+    </form>
+  );
+};
+
+const DeleteConfirmationModal = ({ item, allData, onClose, onDataChange }) => {
+  const handleDelete = () => {
+    const newData = {
+      ...allData,
+      products: allData.products.filter((p) => p.id !== item.id),
+      prices: allData.prices.filter((p) => p.productId !== item.id),
+      purchases: allData.purchases
+        .map((purchase) => ({
+          ...purchase,
+          items: purchase.items.filter((i) => i.productId !== item.id),
+        }))
+        .filter((purchase) => purchase.items.length > 0),
+    };
+    onDataChange(newData, "Produto excluído com sucesso!");
+    onClose();
+  };
+
+  return (
+    <div className="p-6">
+      <div className="flex items-center gap-4">
+        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+          <AlertCircle className="h-6 w-6 text-red-600" />
+        </div>
+        <div>
+          <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
+            Excluir Produto
+          </h3>
+          <div className="mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Tem certeza que deseja excluir <strong>{item.name}</strong>? Todos
+              os seus preços e históricos de compra serão removidos
+              permanentemente. Esta ação não pode ser desfeita.
+            </p>
           </div>
-        </form>
+        </div>
+      </div>
+      <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-4 -mx-6 -mb-6 rounded-b-lg">
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="btn-danger w-full sm:w-auto sm:ml-3"
+        >
+          Excluir
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="btn-secondary w-full mt-3 sm:w-auto sm:mt-0"
+        >
+          Cancelar
+        </button>
       </div>
     </div>
   );
 };
-
-// Estilos reutilizáveis em classes para facilitar a manutenção
-const globalStyles = `
-  .input-style {
-    @apply bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500;
-  }
-  .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors;
-  }
-  .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg transition-colors;
-  }
-`;
-
-// Adiciona os estilos globais ao head do documento
-const styleSheet = document.createElement("style");
-styleSheet.type = "text/css";
-styleSheet.innerText = globalStyles;
-document.head.appendChild(styleSheet);
