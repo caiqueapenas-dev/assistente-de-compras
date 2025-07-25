@@ -36,6 +36,13 @@
       "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Contonetes"
     },
     {
+      "name": "Creme de pentear",
+      "brand": "Pantene",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Creme%20de%20pentear",
+      "id": "p1753451082316"
+    },
+    {
       "id": "p6",
       "name": "Creme Dental",
       "brand": "Oral B 3d White",
@@ -55,6 +62,13 @@
       "brand": "Rexona Cotton Dry",
       "category": "utilidades e higiene",
       "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Desodorante"
+    },
+    {
+      "name": "Enxaguante bucal",
+      "brand": "Colgate",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Enxaguante%20bucal",
+      "id": "p1753450982800"
     },
     {
       "id": "p9",
@@ -197,6 +211,20 @@
       "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Requeijao"
     },
     {
+      "name": "Sabão em pó",
+      "brand": "Tixan",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Sab%C3%A3o%20em%20p%C3%B3",
+      "id": "p1753451153253"
+    },
+    {
+      "name": "Sabão liquido",
+      "brand": "Omo",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Sab%C3%A3o%20liquido",
+      "id": "p1753451122662"
+    },
+    {
       "id": "p29",
       "name": "Sabonete",
       "brand": "Lux Gardenia",
@@ -236,14 +264,14 @@
       "name": "Shampoo",
       "brand": "Clear Men",
       "category": "utilidades e higiene",
-      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Shampoo"
+      "photo": "/shampoo-clear-men-anticaspa-limpeza-diaria-2-em-1-200-ml.jpg"
     },
     {
       "id": "p35",
       "name": "Torrada Integral Light",
       "brand": "Bauducco",
       "category": "alimentos",
-      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Torrada"
+      "photo": "/Torrada-Integral-Light.webp"
     },
     {
       "id": "p36",
@@ -254,8 +282,14 @@
     }
   ],
   "stores": [
-    { "id": "s1", "name": "Central Supermercado" },
-    { "id": "s2", "name": "Mais Supermercado" }
+    {
+      "id": "s1",
+      "name": "Central Supermercado"
+    },
+    {
+      "id": "s2",
+      "name": "Mais Supermercado"
+    }
   ],
   "prices": [
     {
@@ -375,7 +409,7 @@
     {
       "productId": "p20",
       "storeId": "s2",
-      "price": 10.0,
+      "price": 10,
       "lastUpdated": "2025-07-25T12:27:00.000Z"
     },
     {
@@ -459,8 +493,8 @@
     {
       "productId": "p34",
       "storeId": "s2",
-      "price": 13.49,
-      "lastUpdated": "2025-07-25T12:27:00.000Z"
+      "price": 15.85,
+      "lastUpdated": "2025-07-25T13:51:38.548Z"
     },
     {
       "productId": "p35",
@@ -473,48 +507,64 @@
       "storeId": "s1",
       "price": 2.39,
       "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p1753450982800",
+      "storeId": "s2",
+      "price": 13.35,
+      "lastUpdated": "2025-07-25T13:51:38.548Z"
+    },
+    {
+      "productId": "p1753451082316",
+      "storeId": "s2",
+      "price": 14.4,
+      "lastUpdated": "2025-07-25T13:51:38.548Z"
+    },
+    {
+      "productId": "p1753451122662",
+      "storeId": "s2",
+      "price": 11.75,
+      "lastUpdated": "2025-07-25T13:51:38.548Z"
+    },
+    {
+      "productId": "p1753451153253",
+      "storeId": "s2",
+      "price": 11.85,
+      "lastUpdated": "2025-07-25T13:51:38.548Z"
     }
   ],
   "purchases": [
     {
-      "id": "c1",
-      "date": "2025-06-05T23:54:43.291Z",
-      "storeId": "s1",
+      "id": "c1753451394411",
+      "date": "2025-07-25T00:00:00.000Z",
+      "storeId": "s2",
       "type": "Mensal",
       "items": [
-        { "productId": "p2", "quantity": 2, "unitPrice": 5.39 },
-        { "productId": "p3", "quantity": 4, "unitPrice": 4.25 },
-        { "productId": "p4", "quantity": 1, "unitPrice": 19.49 },
-        { "productId": "p9", "quantity": 1, "unitPrice": 3.49 },
-        { "productId": "p10", "quantity": 2, "unitPrice": 7.49 },
-        { "productId": "p11", "quantity": 3, "unitPrice": 1.39 },
-        { "productId": "p13", "quantity": 2, "unitPrice": 6.7 },
-        { "productId": "p14", "quantity": 1, "unitPrice": 3.39 },
-        { "productId": "p15", "quantity": 1, "unitPrice": 5.59 },
-        { "productId": "p16", "quantity": 3, "unitPrice": 7.49 },
-        { "productId": "p17", "quantity": 1, "unitPrice": 3.49 },
-        { "productId": "p18", "quantity": 7, "unitPrice": 2.25 },
-        { "productId": "p21", "quantity": 2, "unitPrice": 9.49 },
-        { "productId": "p28", "quantity": 2, "unitPrice": 12.49 },
-        { "productId": "p36", "quantity": 2, "unitPrice": 2.39 },
-        { "productId": "p1", "quantity": 1, "unitPrice": 3.69 },
-        { "productId": "p5", "quantity": 1, "unitPrice": 2.49 },
-        { "productId": "p6", "quantity": 2, "unitPrice": 7.49 },
-        { "productId": "p7", "quantity": 1, "unitPrice": 3.39 },
-        { "productId": "p8", "quantity": 1, "unitPrice": 14.99 },
-        { "productId": "p12", "quantity": 1, "unitPrice": 11.99 },
-        { "productId": "p19", "quantity": 1, "unitPrice": 3.69 },
-        { "productId": "p22", "quantity": 1, "unitPrice": 18.99 },
-        { "productId": "p23", "quantity": 2, "unitPrice": 3.99 },
-        { "productId": "p24", "quantity": 2, "unitPrice": 1.69 },
-        { "productId": "p25", "quantity": 1, "unitPrice": 1.69 },
-        { "productId": "p26", "quantity": 1, "unitPrice": 1.69 },
-        { "productId": "p27", "quantity": 2, "unitPrice": 5.99 },
-        { "productId": "p29", "quantity": 1, "unitPrice": 2.65 },
-        { "productId": "p30", "quantity": 2, "unitPrice": 2.19 },
-        { "productId": "p31", "quantity": 1, "unitPrice": 2.19 },
-        { "productId": "p32", "quantity": 1, "unitPrice": 8.99 },
-        { "productId": "p33", "quantity": 1, "unitPrice": 8.99 }
+        {
+          "productId": "p1753450982800",
+          "quantity": 1,
+          "unitPrice": 13.35
+        },
+        {
+          "productId": "p1753451082316",
+          "quantity": 1,
+          "unitPrice": 14.4
+        },
+        {
+          "productId": "p1753451122662",
+          "quantity": 1,
+          "unitPrice": 11.75
+        },
+        {
+          "productId": "p1753451153253",
+          "quantity": 1,
+          "unitPrice": 11.85
+        },
+        {
+          "productId": "p34",
+          "quantity": 1,
+          "unitPrice": 15.85
+        }
       ]
     },
     {
@@ -522,8 +572,192 @@
       "date": "2025-06-15T03:00:00.000Z",
       "storeId": "s2",
       "type": "Reposição",
-      "items": [{ "productId": "p20", "quantity": 1, "unitPrice": 10.0 }]
+      "items": [
+        {
+          "productId": "p20",
+          "quantity": 1,
+          "unitPrice": 10
+        }
+      ]
+    },
+    {
+      "id": "c1",
+      "date": "2025-06-05T23:54:43.291Z",
+      "storeId": "s1",
+      "type": "Mensal",
+      "items": [
+        {
+          "productId": "p2",
+          "quantity": 2,
+          "unitPrice": 5.39
+        },
+        {
+          "productId": "p3",
+          "quantity": 4,
+          "unitPrice": 4.25
+        },
+        {
+          "productId": "p4",
+          "quantity": 1,
+          "unitPrice": 19.49
+        },
+        {
+          "productId": "p9",
+          "quantity": 1,
+          "unitPrice": 3.49
+        },
+        {
+          "productId": "p10",
+          "quantity": 2,
+          "unitPrice": 7.49
+        },
+        {
+          "productId": "p11",
+          "quantity": 3,
+          "unitPrice": 1.39
+        },
+        {
+          "productId": "p13",
+          "quantity": 2,
+          "unitPrice": 6.7
+        },
+        {
+          "productId": "p14",
+          "quantity": 1,
+          "unitPrice": 3.39
+        },
+        {
+          "productId": "p15",
+          "quantity": 1,
+          "unitPrice": 5.59
+        },
+        {
+          "productId": "p16",
+          "quantity": 3,
+          "unitPrice": 7.49
+        },
+        {
+          "productId": "p17",
+          "quantity": 1,
+          "unitPrice": 3.49
+        },
+        {
+          "productId": "p18",
+          "quantity": 7,
+          "unitPrice": 2.25
+        },
+        {
+          "productId": "p21",
+          "quantity": 2,
+          "unitPrice": 9.49
+        },
+        {
+          "productId": "p28",
+          "quantity": 2,
+          "unitPrice": 12.49
+        },
+        {
+          "productId": "p36",
+          "quantity": 2,
+          "unitPrice": 2.39
+        },
+        {
+          "productId": "p1",
+          "quantity": 1,
+          "unitPrice": 3.69
+        },
+        {
+          "productId": "p5",
+          "quantity": 1,
+          "unitPrice": 2.49
+        },
+        {
+          "productId": "p6",
+          "quantity": 2,
+          "unitPrice": 7.49
+        },
+        {
+          "productId": "p7",
+          "quantity": 1,
+          "unitPrice": 3.39
+        },
+        {
+          "productId": "p8",
+          "quantity": 1,
+          "unitPrice": 14.99
+        },
+        {
+          "productId": "p12",
+          "quantity": 1,
+          "unitPrice": 11.99
+        },
+        {
+          "productId": "p19",
+          "quantity": 1,
+          "unitPrice": 3.69
+        },
+        {
+          "productId": "p22",
+          "quantity": 1,
+          "unitPrice": 18.99
+        },
+        {
+          "productId": "p23",
+          "quantity": 2,
+          "unitPrice": 3.99
+        },
+        {
+          "productId": "p24",
+          "quantity": 2,
+          "unitPrice": 1.69
+        },
+        {
+          "productId": "p25",
+          "quantity": 1,
+          "unitPrice": 1.69
+        },
+        {
+          "productId": "p26",
+          "quantity": 1,
+          "unitPrice": 1.69
+        },
+        {
+          "productId": "p27",
+          "quantity": 2,
+          "unitPrice": 5.99
+        },
+        {
+          "productId": "p29",
+          "quantity": 1,
+          "unitPrice": 2.65
+        },
+        {
+          "productId": "p30",
+          "quantity": 2,
+          "unitPrice": 2.19
+        },
+        {
+          "productId": "p31",
+          "quantity": 1,
+          "unitPrice": 2.19
+        },
+        {
+          "productId": "p32",
+          "quantity": 1,
+          "unitPrice": 8.99
+        },
+        {
+          "productId": "p33",
+          "quantity": 1,
+          "unitPrice": 8.99
+        }
+      ]
     }
   ],
-  "categories": ["hortifruti", "bebidas", "alimentos", "utilidades e higiene"]
+  "categories": [
+    "hortifruti",
+    "bebidas",
+    "alimentos",
+    "utilidades e higiene"
+  ]
 }
