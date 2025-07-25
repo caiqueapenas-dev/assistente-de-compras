@@ -877,6 +877,18 @@ const ModalManager = ({ modal, onClose, data, onDataChange }) => {
         return null;
     }
   };
+  const getModalMaxWidth = () => {
+    switch (modal.type) {
+      case "deleteConfirmation":
+        return "max-w-lg";
+      case "addEditProduct":
+        return "max-w-2xl";
+      case "productDetail":
+        return "max-w-4xl";
+      default:
+        return "max-w-3xl";
+    }
+  };
 
   return (
     <div
@@ -885,7 +897,7 @@ const ModalManager = ({ modal, onClose, data, onDataChange }) => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl relative animate-scale-in"
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full ${getModalMaxWidth()} relative animate-scale-in`}
       >
         {renderModalContent()}
       </div>
@@ -902,31 +914,40 @@ const ProductDetailModal = ({ product, allData, onClose, onDataChange }) => {
 
   return (
     <>
-      <div className="p-6">
-        <div className="flex flex-col md:flex-row gap-6">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 z-10"
+      >
+        <X size={24} />
+      </button>
+      <div className="p-8">
+        <div className="flex flex-col md:flex-row gap-8">
           <img
             src={product.photo}
             alt={product.name}
-            className="w-full md:w-1/3 h-auto object-cover rounded-lg"
+            className="w-full md:w-64 h-64 object-cover rounded-lg shadow-lg"
             onError={(e) => {
               e.target.onerror = null;
               e.target.src =
                 "https://placehold.co/200x200/e2e8f0/4a5568?text=Imagem";
             }}
           />
+
           <div className="flex-1">
-            <h2 className="text-3xl font-bold">{product.name}</h2>
-            <p className="text-lg text-gray-500 dark:text-gray-400">
-              {product.brand}
-            </p>
-            <span className="text-sm bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 inline-block px-3 py-1 rounded-full mt-2">
+            <span className="text-sm bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 inline-block px-3 py-1 rounded-full mb-2">
               {product.category}
             </span>
+            <h2 className="text-4xl font-bold text-gray-800 dark:text-white">
+              {product.name}
+            </h2>
+            <p className="text-xl text-gray-500 dark:text-gray-400 mt-1">
+              {product.brand}
+            </p>
 
-            <h3 className="text-xl font-semibold mt-6 mb-2">
+            <h3 className="text-xl font-semibold mt-8 mb-3 border-b pb-2 border-gray-200 dark:border-gray-700">
               Preços Registrados
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {prices.length > 0 ? (
                 prices.map((price) => {
                   const store = allData.stores.find(
@@ -935,17 +956,19 @@ const ProductDetailModal = ({ product, allData, onClose, onDataChange }) => {
                   return (
                     <div
                       key={store.id}
-                      className="flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded-md"
+                      className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg"
                     >
-                      <span className="font-medium">{store.name}</span>
-                      <span className="font-bold text-lg">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {store.name}
+                      </span>
+                      <span className="font-bold text-lg text-indigo-600 dark:text-indigo-400">
                         R$ {price.price.toFixed(2)}
                       </span>
                     </div>
                   );
                 })
               ) : (
-                <p className="text-gray-500">
+                <p className="text-gray-500 italic">
                   Nenhum preço registrado para este produto.
                 </p>
               )}
@@ -953,7 +976,7 @@ const ProductDetailModal = ({ product, allData, onClose, onDataChange }) => {
           </div>
         </div>
       </div>
-      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 flex justify-end gap-3 rounded-b-lg">
+      <div className="bg-gray-50 dark:bg-gray-900/50 p-4 flex justify-end gap-3 rounded-b-lg border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={() =>
@@ -1061,13 +1084,15 @@ const AddEditProductForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="p-6">
-        <h2 className="text-xl font-bold mb-4">
+    <form onSubmit={handleSubmit} className="overflow-hidden">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-semibold">
           {productToEdit ? "Editar Produto" : "Adicionar Novo Produto"}
         </h2>
-        <div className="space-y-4">
-          <div>
+      </div>
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">
               Nome do Produto
             </label>
@@ -1106,7 +1131,7 @@ const AddEditProductForm = ({
               ))}
             </select>
           </div>
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium mb-1">
               Foto do Produto (URL ou Upload)
             </label>
@@ -1128,7 +1153,7 @@ const AddEditProductForm = ({
           </div>
         </div>
       </div>
-      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 flex justify-end gap-3 rounded-b-lg">
+      <div className="bg-gray-50 dark:bg-gray-900/50 p-4 flex justify-end gap-3 rounded-b-lg border-t border-gray-200 dark:border-gray-700">
         <button type="button" onClick={onClose} className="btn-secondary">
           Cancelar
         </button>
@@ -1158,25 +1183,33 @@ const DeleteConfirmationModal = ({ item, allData, onClose, onDataChange }) => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center gap-4">
-        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-          <AlertCircle className="h-6 w-6 text-red-600" />
-        </div>
-        <div>
-          <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
-            Excluir Produto
-          </h3>
-          <div className="mt-2">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Tem certeza que deseja excluir <strong>{item.name}</strong>? Todos
-              os seus preços e históricos de compra serão removidos
-              permanentemente. Esta ação não pode ser desfeita.
-            </p>
+    <div className="relative">
+      <button
+        onClick={onClose}
+        className="absolute -top-2 -right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 z-10"
+      >
+        <X size={24} />
+      </button>
+      <div className="p-6 text-center sm:text-left">
+        <div className="sm:flex sm:items-start sm:gap-4">
+          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
+            <AlertCircle className="h-6 w-6 text-red-600" />
+          </div>
+          <div className="mt-3 sm:mt-0">
+            <h3 className="text-lg leading-6 font-bold text-gray-900 dark:text-gray-100">
+              Excluir Produto
+            </h3>
+            <div className="mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Tem certeza que deseja excluir <strong>{item.name}</strong>?
+                Todos os seus preços e históricos de compra serão removidos
+                permanentemente. Esta ação não pode ser desfeita.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-      <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-4 -mx-6 -mb-6 rounded-b-lg">
+      <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 sm:flex sm:flex-row-reverse rounded-b-lg">
         <button
           type="button"
           onClick={handleDelete}
