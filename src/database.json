@@ -1,0 +1,529 @@
+{
+  "products": [
+    {
+      "id": "p1",
+      "name": "Agua Sanitaria",
+      "brand": "Ype",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Agua+Sanitaria"
+    },
+    {
+      "id": "p2",
+      "name": "Arroz Branco",
+      "brand": "Tio Urbano",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Arroz"
+    },
+    {
+      "id": "p3",
+      "name": "Aveia Integral Flocos Finos",
+      "brand": "Quaker",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Aveia"
+    },
+    {
+      "id": "p4",
+      "name": "Cafe",
+      "brand": "Pilao Extraforte",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Cafe"
+    },
+    {
+      "id": "p5",
+      "name": "Contonetes",
+      "brand": "Polyfarma",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Contonetes"
+    },
+    {
+      "id": "p6",
+      "name": "Creme Dental",
+      "brand": "Oral B 3d White",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Creme+Dental"
+    },
+    {
+      "id": "p7",
+      "name": "Desinfetante",
+      "brand": "Ype Bak Floral",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Desinfetante"
+    },
+    {
+      "id": "p8",
+      "name": "Desodorante Aerosol",
+      "brand": "Rexona Cotton Dry",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Desodorante"
+    },
+    {
+      "id": "p9",
+      "name": "Ervilha",
+      "brand": "Bonare",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Ervilha"
+    },
+    {
+      "id": "p10",
+      "name": "Feijao Carioca",
+      "brand": "Mucambo Premium",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Feijao"
+    },
+    {
+      "id": "p11",
+      "name": "Flocao",
+      "brand": "Marata",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Flocao"
+    },
+    {
+      "id": "p12",
+      "name": "Lava Roupas Liquido",
+      "brand": "Brilhante",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Lava+Roupas"
+    },
+    {
+      "id": "p13",
+      "name": "Leite Integral Em Po",
+      "brand": "Ccgl",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Leite+Po"
+    },
+    {
+      "id": "p14",
+      "name": "Macarrao",
+      "brand": "Brandini",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Macarrao"
+    },
+    {
+      "id": "p15",
+      "name": "Margarina",
+      "brand": "Qualy Com Sal",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Margarina"
+    },
+    {
+      "id": "p16",
+      "name": "Massa De Tapioca",
+      "brand": "Cuco",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Tapioca"
+    },
+    {
+      "id": "p17",
+      "name": "Milho Verde",
+      "brand": "Bonare",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Milho"
+    },
+    {
+      "id": "p18",
+      "name": "Molho Tomate",
+      "brand": "Tarantela",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Molho"
+    },
+    {
+      "id": "p19",
+      "name": "Multiuso",
+      "brand": "Oboa Lavanda",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Multiuso"
+    },
+    {
+      "id": "p20",
+      "name": "Ovo",
+      "brand": "Sem Marca",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Ovo"
+    },
+    {
+      "id": "p21",
+      "name": "Pao De Forma Integral",
+      "brand": "Bauducco",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Pao"
+    },
+    {
+      "id": "p22",
+      "name": "Papel Higienico",
+      "brand": "Veludo",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Papel+Higienico"
+    },
+    {
+      "id": "p23",
+      "name": "Papel Toalha",
+      "brand": "Caprice Branca",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Papel+Toalha"
+    },
+    {
+      "id": "p24",
+      "name": "Pedra Sanitaria",
+      "brand": "Sany Eucalipto",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Pedra+Sanitaria"
+    },
+    {
+      "id": "p25",
+      "name": "Pedra Sanitaria",
+      "brand": "Sany Lavanda",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Pedra+Sanitaria"
+    },
+    {
+      "id": "p26",
+      "name": "Pedra Sanitaria",
+      "brand": "Sany Floral",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Pedra+Sanitaria"
+    },
+    {
+      "id": "p27",
+      "name": "Prestobarba",
+      "brand": "Gillette Champions",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Prestobarba"
+    },
+    {
+      "id": "p28",
+      "name": "Requeijao Cremoso",
+      "brand": "Nestle Light",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Requeijao"
+    },
+    {
+      "id": "p29",
+      "name": "Sabonete",
+      "brand": "Lux Gardenia",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Sabonete"
+    },
+    {
+      "id": "p30",
+      "name": "Sabonete",
+      "brand": "Lux Rosas Francesas",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Sabonete"
+    },
+    {
+      "id": "p31",
+      "name": "Sabonete",
+      "brand": "Lux Buque De Jasmim",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Sabonete"
+    },
+    {
+      "id": "p32",
+      "name": "Sabonete Liquido",
+      "brand": "Lux Buque De Jasmim",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Sabonete+Liquido"
+    },
+    {
+      "id": "p33",
+      "name": "Saco P/lixo",
+      "brand": "Clarus",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Saco+Lixo"
+    },
+    {
+      "id": "p34",
+      "name": "Shampoo",
+      "brand": "Clear Men",
+      "category": "utilidades e higiene",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Shampoo"
+    },
+    {
+      "id": "p35",
+      "name": "Torrada Integral Light",
+      "brand": "Bauducco",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Torrada"
+    },
+    {
+      "id": "p36",
+      "name": "Vinagre Alcool",
+      "brand": "Marata",
+      "category": "alimentos",
+      "photo": "https://placehold.co/100x100/e2e8f0/4a5568?text=Vinagre"
+    }
+  ],
+  "stores": [
+    { "id": "s1", "name": "Central Supermercado" },
+    { "id": "s2", "name": "Mais Supermercado" }
+  ],
+  "prices": [
+    {
+      "productId": "p1",
+      "storeId": "s1",
+      "price": 3.69,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p2",
+      "storeId": "s1",
+      "price": 5.39,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p3",
+      "storeId": "s1",
+      "price": 4.25,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p4",
+      "storeId": "s1",
+      "price": 19.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p5",
+      "storeId": "s1",
+      "price": 2.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p6",
+      "storeId": "s1",
+      "price": 7.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p7",
+      "storeId": "s1",
+      "price": 3.39,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p8",
+      "storeId": "s1",
+      "price": 14.99,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p9",
+      "storeId": "s1",
+      "price": 3.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p10",
+      "storeId": "s1",
+      "price": 7.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p11",
+      "storeId": "s1",
+      "price": 1.39,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p12",
+      "storeId": "s1",
+      "price": 11.99,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p13",
+      "storeId": "s1",
+      "price": 6.7,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p14",
+      "storeId": "s1",
+      "price": 3.39,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p15",
+      "storeId": "s1",
+      "price": 5.59,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p16",
+      "storeId": "s1",
+      "price": 7.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p17",
+      "storeId": "s1",
+      "price": 3.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p18",
+      "storeId": "s1",
+      "price": 2.25,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p19",
+      "storeId": "s1",
+      "price": 3.69,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p20",
+      "storeId": "s2",
+      "price": 10.0,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p21",
+      "storeId": "s1",
+      "price": 9.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p22",
+      "storeId": "s1",
+      "price": 18.99,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p23",
+      "storeId": "s1",
+      "price": 3.99,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p24",
+      "storeId": "s1",
+      "price": 1.69,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p25",
+      "storeId": "s1",
+      "price": 1.69,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p26",
+      "storeId": "s1",
+      "price": 1.69,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p27",
+      "storeId": "s1",
+      "price": 5.99,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p28",
+      "storeId": "s1",
+      "price": 12.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p29",
+      "storeId": "s1",
+      "price": 2.65,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p30",
+      "storeId": "s1",
+      "price": 2.19,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p31",
+      "storeId": "s1",
+      "price": 2.19,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p32",
+      "storeId": "s1",
+      "price": 8.99,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p33",
+      "storeId": "s1",
+      "price": 8.99,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p34",
+      "storeId": "s2",
+      "price": 13.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p35",
+      "storeId": "s2",
+      "price": 6.49,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    },
+    {
+      "productId": "p36",
+      "storeId": "s1",
+      "price": 2.39,
+      "lastUpdated": "2025-07-25T12:27:00.000Z"
+    }
+  ],
+  "purchases": [
+    {
+      "id": "c1",
+      "date": "2025-06-05T23:54:43.291Z",
+      "storeId": "s1",
+      "type": "Mensal",
+      "items": [
+        { "productId": "p2", "quantity": 2, "unitPrice": 5.39 },
+        { "productId": "p3", "quantity": 4, "unitPrice": 4.25 },
+        { "productId": "p4", "quantity": 1, "unitPrice": 19.49 },
+        { "productId": "p9", "quantity": 1, "unitPrice": 3.49 },
+        { "productId": "p10", "quantity": 2, "unitPrice": 7.49 },
+        { "productId": "p11", "quantity": 3, "unitPrice": 1.39 },
+        { "productId": "p13", "quantity": 2, "unitPrice": 6.7 },
+        { "productId": "p14", "quantity": 1, "unitPrice": 3.39 },
+        { "productId": "p15", "quantity": 1, "unitPrice": 5.59 },
+        { "productId": "p16", "quantity": 3, "unitPrice": 7.49 },
+        { "productId": "p17", "quantity": 1, "unitPrice": 3.49 },
+        { "productId": "p18", "quantity": 7, "unitPrice": 2.25 },
+        { "productId": "p21", "quantity": 2, "unitPrice": 9.49 },
+        { "productId": "p28", "quantity": 2, "unitPrice": 12.49 },
+        { "productId": "p36", "quantity": 2, "unitPrice": 2.39 },
+        { "productId": "p1", "quantity": 1, "unitPrice": 3.69 },
+        { "productId": "p5", "quantity": 1, "unitPrice": 2.49 },
+        { "productId": "p6", "quantity": 2, "unitPrice": 7.49 },
+        { "productId": "p7", "quantity": 1, "unitPrice": 3.39 },
+        { "productId": "p8", "quantity": 1, "unitPrice": 14.99 },
+        { "productId": "p12", "quantity": 1, "unitPrice": 11.99 },
+        { "productId": "p19", "quantity": 1, "unitPrice": 3.69 },
+        { "productId": "p22", "quantity": 1, "unitPrice": 18.99 },
+        { "productId": "p23", "quantity": 2, "unitPrice": 3.99 },
+        { "productId": "p24", "quantity": 2, "unitPrice": 1.69 },
+        { "productId": "p25", "quantity": 1, "unitPrice": 1.69 },
+        { "productId": "p26", "quantity": 1, "unitPrice": 1.69 },
+        { "productId": "p27", "quantity": 2, "unitPrice": 5.99 },
+        { "productId": "p29", "quantity": 1, "unitPrice": 2.65 },
+        { "productId": "p30", "quantity": 2, "unitPrice": 2.19 },
+        { "productId": "p31", "quantity": 1, "unitPrice": 2.19 },
+        { "productId": "p32", "quantity": 1, "unitPrice": 8.99 },
+        { "productId": "p33", "quantity": 1, "unitPrice": 8.99 }
+      ]
+    },
+    {
+      "id": "c2",
+      "date": "2025-06-15T03:00:00.000Z",
+      "storeId": "s2",
+      "type": "Reposição",
+      "items": [{ "productId": "p20", "quantity": 1, "unitPrice": 10.0 }]
+    }
+  ],
+  "categories": ["hortifruti", "bebidas", "alimentos", "utilidades e higiene"]
+}
