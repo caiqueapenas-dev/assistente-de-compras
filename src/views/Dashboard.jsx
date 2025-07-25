@@ -78,7 +78,7 @@ const Dashboard = ({ data, searchTerm, onAddToShoppingList, onOpenModal }) => {
             <div className="p-2 bg-gray-50 dark:bg-gray-700/50 flex justify-end items-center">
               <button
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e.stopPropagation(); // Impede que o clique no botão abra o modal
                   onAddToShoppingList(product);
                 }}
                 className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-1 px-3 rounded-lg text-sm flex items-center gap-1"
