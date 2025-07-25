@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import CurrencyInput from "../shared/CurrencyInput";
 
 const QuickPriceUpdateModal = ({
   product,
@@ -7,7 +8,7 @@ const QuickPriceUpdateModal = ({
   onClose,
   onDataChange,
 }) => {
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState(0);
   const storeName = allData.stores.find((s) => s.id === storeId)?.name || "";
 
   useEffect(() => {
@@ -15,7 +16,7 @@ const QuickPriceUpdateModal = ({
       (p) => p.productId === product.id && p.storeId === storeId
     );
     if (existingPrice) {
-      setPrice(existingPrice.price.toString());
+      setPrice(existingPrice.price);
     }
   }, [product, storeId, allData.prices]);
 
@@ -34,14 +35,12 @@ const QuickPriceUpdateModal = ({
     let updatedPrices = [...allData.prices];
 
     if (priceIndex > -1) {
-      // Atualiza o preço existente
       updatedPrices[priceIndex] = {
         ...updatedPrices[priceIndex],
         price: newPrice,
         lastUpdated: new Date().toISOString(),
       };
     } else {
-      // Adiciona um novo registro de preço
       updatedPrices.push({
         productId: product.id,
         storeId: storeId,
@@ -74,15 +73,11 @@ const QuickPriceUpdateModal = ({
         <label htmlFor="quick-price" className="block text-sm font-medium mb-1">
           Novo Preço (R$)
         </label>
-        <input
+        <CurrencyInput
           id="quick-price"
-          type="number"
           value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          min="0.01"
-          step="0.01"
+          onChange={(value) => setPrice(value)}
           className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2"
-          placeholder="Ex: 12.99"
           required
           autoFocus
         />

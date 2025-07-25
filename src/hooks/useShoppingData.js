@@ -89,16 +89,18 @@ export const useShoppingData = () => {
     (productId) => {
       const relevantPurchases = data.purchases
         .flatMap((p) => p.items)
-        .filter((item) => item.productId === productId);
+        .filter((item) => item.productId === productId && item.quantity > 0);
 
-      if (relevantPurchases.length === 0) return 1;
+      if (relevantPurchases.length < 2) return 1;
 
       const last5Purchases = relevantPurchases.slice(-5);
-      const average =
-        last5Purchases.reduce((sum, item) => sum + item.quantity, 0) /
-        last5Purchases.length;
+      const totalQuantity = last5Purchases.reduce(
+        (sum, item) => sum + item.quantity,
+        0
+      );
+      const average = totalQuantity / last5Purchases.length;
 
-      return Math.round(average) || 1;
+      return Math.max(1, Math.round(average));
     },
     [data.purchases]
   );

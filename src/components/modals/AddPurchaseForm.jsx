@@ -1,259 +1,292 @@
-import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
-import ModalManager from "../shared/ModalManager";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, Trash2, Building } from "lucide-react";
+import {
+  formatCurrency,
+  parseDateString,
+  formatDateForInput,
+} from "../../utils/formatters";
+import PurchaseItem from "./PurchaseItem"; // Importando o novo componente
 
-const AddPurchaseForm = ({ allData, onClose, onDataChange }) => {
-  const [purchaseDetails, setPurchaseDetails] = useState({
-    storeId: allData.stores[0]?.id || "",
-    date: new Date().toISOString().split("T")[0],
-    type: "Mensal",
-  });
-  const [items, setItems] = useState([
-    { productId: "", quantity: 1, unitPrice: "" },
-  ]);
-  const [subModal, setSubModal] = useState({
-    isOpen: false,
-    type: "",
-    data: null,
-  });
+const AddPurchaseForm = ({
+  purchaseToEdit,
+  allData,
+  onClose,
+  onDataChange,
+  onOpenModal,
+}) => {
+  const { stores } = allData;
+  const [date, setDate] = useState(
+    formatDateForInput(
+      purchaseToEdit ? parseDateString(purchaseToEdit.date) : new Date()
+    )
+  );
+  const [marketGroups, setMarketGroups] = useState([]);
 
-  const openSubModal = (type, data = null) =>
-    setSubModal({ isOpen: true, type, data });
-  const closeSubModal = () =>
-    setSubModal({ isOpen: false, type: "", data: null });
+  // Inicializa os grupos de mercado
+  useEffect(() => {
+    if (purchaseToEdit) {
+      // Se estiver editando, cria um grupo com os dados existentes
+      const initialGroup = {
+        localId: `group_${Date.now()}`,
+        storeId: purchaseToEdit.storeId,
+        items: purchaseToEdit.items.map((item) => ({
+          ...item,
+          localId: `item_${Date.now()}_${Math.random()}`,
+          purchaseType: item.weight > 0 ? "weight" : "unit",
+        })),
+      };
+      setMarketGroups([initialGroup]);
+    } else if (stores.length > 0) {
+      // Se estiver criando, começa com um grupo vazio
+      setMarketGroups([
+        { localId: `group_${Date.now()}`, storeId: stores[0].id, items: [] },
+      ]);
+    }
+  }, [purchaseToEdit, stores]);
 
-  const handleDetailChange = (e) => {
-    const { name, value } = e.target;
-    setPurchaseDetails((prev) => ({ ...prev, [name]: value }));
+  const handleGroupChange = (localId, field, value) => {
+    setMarketGroups((currentGroups) =>
+      currentGroups.map((group) =>
+        group.localId === localId ? { ...group, [field]: value } : group
+      )
+    );
   };
 
-  const handleItemChange = (index, e) => {
-    const { name, value } = e.target;
-    const newItems = [...items];
-    newItems[index][name] = value;
-    setItems(newItems);
+  const handleItemChange = (groupId, itemId, field, value) => {
+    setMarketGroups((currentGroups) =>
+      currentGroups.map((group) => {
+        if (group.localId === groupId) {
+          const updatedItems = group.items.map((item) =>
+            item.localId === itemId ? { ...item, [field]: value } : item
+          );
+          return { ...group, items: updatedItems };
+        }
+        return group;
+      })
+    );
   };
 
-  const addItem = () => {
-    setItems([...items, { productId: "", quantity: 1, unitPrice: "" }]);
+  const addNewItemToGroup = (groupId) => {
+    setMarketGroups((currentGroups) =>
+      currentGroups.map((group) => {
+        if (group.localId === groupId) {
+          const newItem = {
+            localId: `item_${Date.now()}_${Math.random()}`,
+            productId: "",
+            quantity: 1,
+            unitPrice: 0,
+            purchaseType: "unit",
+            weight: 0,
+          };
+          return { ...group, items: [...group.items, newItem] };
+        }
+        return group;
+      })
+    );
   };
 
-  const removeItem = (index) => {
-    const newItems = items.filter((_, i) => i !== index);
-    setItems(newItems);
+  const removeItemFromGroup = (groupId, itemId) => {
+    setMarketGroups((currentGroups) =>
+      currentGroups.map((group) => {
+        if (group.localId === groupId) {
+          const filteredItems = group.items.filter(
+            (item) => item.localId !== itemId
+          );
+          return { ...group, items: filteredItems };
+        }
+        return group;
+      })
+    );
   };
+
+  const addNewMarketGroup = () => {
+    const newGroup = {
+      localId: `group_${Date.now()}`,
+      storeId: stores[0]?.id || "",
+      items: [],
+    };
+    setMarketGroups([...marketGroups, newGroup]);
+  };
+
+  const removeMarketGroup = (groupId) => {
+    setMarketGroups(marketGroups.filter((g) => g.localId !== groupId));
+  };
+
+  const totalCost = useMemo(() => {
+    return marketGroups.reduce((total, group) => {
+      const groupTotal = group.items.reduce((itemTotal, item) => {
+        if (item.purchaseType === "unit") {
+          return itemTotal + item.quantity * item.unitPrice;
+        }
+        if (item.purchaseType === "weight" && item.unitPrice > 0) {
+          return itemTotal + (item.weight / 1000) * item.unitPrice;
+        }
+        return itemTotal;
+      }, 0);
+      return total + groupTotal;
+    }, 0);
+  }, [marketGroups]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const validItems = items.filter(
-      (item) => item.productId && item.quantity > 0 && item.unitPrice > 0
-    );
-    if (validItems.length === 0) {
-      alert("Por favor, adicione pelo menos um item válido à compra.");
+    if (marketGroups.some((g) => g.items.length === 0)) {
+      alert("Todos os grupos de mercado devem ter pelo menos um item.");
       return;
     }
 
-    const newPurchase = {
-      id: `c${Date.now()}`,
-      date: new Date(purchaseDetails.date).toISOString(),
-      storeId: purchaseDetails.storeId,
-      type: purchaseDetails.type,
-      items: validItems.map((item) => ({
+    const newPurchases = marketGroups.map((group) => ({
+      id: `p_${Date.now()}_${group.storeId}`,
+      date: parseDateString(date).toISOString(),
+      storeId: group.storeId,
+      items: group.items.map((item) => ({
         productId: item.productId,
-        quantity: parseFloat(item.quantity),
-        unitPrice: parseFloat(item.unitPrice),
+        quantity: item.purchaseType === "unit" ? Number(item.quantity) : 0,
+        weight: item.purchaseType === "weight" ? Number(item.weight) : 0,
+        unitPrice: Number(item.unitPrice),
       })),
-    };
+    }));
 
     let updatedPrices = [...allData.prices];
-    const newLastUpdated = new Date().toISOString();
-
-    newPurchase.items.forEach((item) => {
-      const priceIndex = updatedPrices.findIndex(
-        (p) =>
-          p.productId === item.productId && p.storeId === newPurchase.storeId
-      );
-
-      if (priceIndex > -1) {
-        updatedPrices[priceIndex] = {
-          ...updatedPrices[priceIndex],
-          price: item.unitPrice,
-          lastUpdated: newLastUpdated,
-        };
-      } else {
-        updatedPrices.push({
+    marketGroups
+      .flatMap((g) => g.items.map((i) => ({ ...i, storeId: g.storeId })))
+      .forEach((item) => {
+        if (!item.productId || !item.storeId) return;
+        const priceIndex = updatedPrices.findIndex(
+          (p) => p.productId === item.productId && p.storeId === item.storeId
+        );
+        const newPriceData = {
           productId: item.productId,
-          storeId: newPurchase.storeId,
-          price: item.unitPrice,
-          lastUpdated: newLastUpdated,
-        });
-      }
-    });
+          storeId: item.storeId,
+          price: Number(item.unitPrice),
+          lastUpdated: parseDateString(date).toISOString(),
+        };
 
-    const newData = {
-      ...allData,
-      purchases: [...allData.purchases, newPurchase],
-      prices: updatedPrices,
-    };
+        if (priceIndex > -1) {
+          updatedPrices[priceIndex] = newPriceData;
+        } else {
+          updatedPrices.push(newPriceData);
+        }
+      });
 
-    onDataChange(newData, "Compra registrada com sucesso!");
+    const finalPurchases = purchaseToEdit
+      ? allData.purchases
+          .filter((p) => p.id !== purchaseToEdit.id)
+          .concat(newPurchases)
+      : [...allData.purchases, ...newPurchases];
+
+    onDataChange(
+      {
+        ...allData,
+        purchases: finalPurchases.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        ),
+        prices: updatedPrices,
+      },
+      purchaseToEdit
+        ? "Compra atualizada com sucesso!"
+        : "Compra adicionada com sucesso!"
+    );
     onClose();
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="overflow-hidden">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-semibold">Registrar Nova Compra</h2>
-        </div>
-        <div className="p-6 max-h-[60vh] overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">Mercado</label>
+    <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[90vh]">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-semibold">
+          {purchaseToEdit ? "Editar Compra" : "Adicionar Nova Compra"}
+        </h2>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="mt-2 w-full md:w-auto bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2"
+          required
+        />
+      </div>
+
+      <div className="p-6 flex-grow overflow-y-auto space-y-6">
+        {marketGroups.map((group, groupIndex) => (
+          <div
+            key={group.localId}
+            className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
+                <Building className="text-gray-500" />
                 <select
-                  name="storeId"
-                  value={purchaseDetails.storeId}
-                  onChange={handleDetailChange}
-                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2"
+                  value={group.storeId}
+                  onChange={(e) =>
+                    handleGroupChange(group.localId, "storeId", e.target.value)
+                  }
+                  className="font-semibold bg-transparent text-lg border-b-2 border-gray-300 dark:border-gray-600 focus:outline-none focus:border-indigo-500"
                 >
-                  {allData.stores.map((store) => (
-                    <option key={store.id} value={store.id}>
-                      {store.name}
+                  {stores.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
                     </option>
                   ))}
                 </select>
+              </div>
+              {marketGroups.length > 1 && (
                 <button
                   type="button"
-                  onClick={() => openSubModal("addStore")}
-                  className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-lg transition-colors flex-shrink-0"
+                  onClick={() => removeMarketGroup(group.localId)}
+                  className="p-2 text-red-500 hover:text-red-700"
                 >
-                  <Plus size={16} />
+                  <Trash2 size={18} />
                 </button>
-              </div>
+              )}
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Data da Compra
-              </label>
-              <input
-                type="date"
-                name="date"
-                value={purchaseDetails.date}
-                onChange={handleDetailChange}
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2"
-              />
+
+            <div className="space-y-4">
+              {group.items.map((item) => (
+                <PurchaseItem
+                  key={item.localId}
+                  item={item}
+                  allData={{ ...allData, storeId: group.storeId }}
+                  onItemChange={(field, value) =>
+                    handleItemChange(group.localId, item.localId, field, value)
+                  }
+                  onRemove={() =>
+                    removeItemFromGroup(group.localId, item.localId)
+                  }
+                  onOpenModal={onOpenModal}
+                />
+              ))}
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Tipo da Compra
-              </label>
-              <select
-                name="type"
-                value={purchaseDetails.type}
-                onChange={handleDetailChange}
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2"
-              >
-                <option value="Mensal">Mensal</option>
-                <option value="Reposição">Reposição</option>
-                <option value="Outro">Outro</option>
-              </select>
-            </div>
+
+            <button
+              type="button"
+              onClick={() => addNewItemToGroup(group.localId)}
+              className="w-full mt-4 flex items-center justify-center gap-2 py-2 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+            >
+              <Plus size={20} /> Adicionar Item a este Mercado
+            </button>
           </div>
-          <h3 className="text-lg font-semibold mb-2">Itens Comprados</h3>
-          <div className="space-y-4">
-            {items.map((item, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-12 gap-4 items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg"
-              >
-                <div className="col-span-6">
-                  <label className="text-xs">Produto</label>
-                  <select
-                    name="productId"
-                    value={item.productId}
-                    onChange={(e) => handleItemChange(index, e)}
-                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-1 text-sm"
-                  >
-                    <option value="">Selecione...</option>
-                    {allData.products
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.brand})
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs">Qtd.</label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={item.quantity}
-                    onChange={(e) => handleItemChange(index, e)}
-                    min="1"
-                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-1 text-sm"
-                  />
-                </div>
-                <div className="col-span-3">
-                  <label className="text-xs">Preço Unit. (R$)</label>
-                  <input
-                    type="number"
-                    name="unitPrice"
-                    value={item.unitPrice}
-                    onChange={(e) => handleItemChange(index, e)}
-                    min="0.01"
-                    step="0.01"
-                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-1 text-sm"
-                  />
-                </div>
-                <div className="col-span-1 flex items-end h-full">
-                  <button
-                    type="button"
-                    onClick={() => removeItem(index)}
-                    className="p-1 text-red-500 hover:text-red-700"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={addItem}
-            className="mt-4 text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-2"
-          >
-            <Plus size={16} /> Adicionar Item
-          </button>
-        </div>
-        <div className="bg-gray-50 dark:bg-gray-900/50 p-4 flex justify-end gap-3 rounded-b-lg border-t border-gray-200 dark:border-gray-700">
-          <button
-            type="button"
-            onClick={onClose}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors"
-          >
+        ))}
+        <button
+          type="button"
+          onClick={addNewMarketGroup}
+          className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-lg font-semibold hover:bg-indigo-200 dark:hover:bg-indigo-900 transition-colors"
+        >
+          <Plus size={20} /> Adicionar Outro Mercado
+        </button>
+      </div>
+
+      <div className="p-4 bg-gray-50 dark:bg-gray-900/50 flex justify-between items-center rounded-b-lg border-t border-gray-200 dark:border-gray-700">
+        <span className="text-xl font-bold">
+          Total: {formatCurrency(totalCost)}
+        </span>
+        <div className="flex gap-3">
+          <button type="button" onClick={onClose} className="btn-secondary">
             Cancelar
           </button>
-          <button
-            type="submit"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-          >
+          <button type="submit" className="btn-primary">
             Salvar Compra
           </button>
         </div>
-      </form>
-      {subModal.isOpen && (
-        <ModalManager
-          modal={subModal}
-          onClose={closeSubModal}
-          data={allData}
-          onDataChange={onDataChange}
-        />
-      )}
-    </>
+      </div>
+    </form>
   );
 };
 

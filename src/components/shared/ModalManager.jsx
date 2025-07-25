@@ -1,13 +1,11 @@
 import AddEditProductForm from "../modals/AddEditProductForm";
 import AddPurchaseForm from "../modals/AddPurchaseForm";
-import AddStoreForm from "../modals/AddStoreForm";
 import DeleteConfirmationModal from "../modals/DeleteConfirmationModal";
 import DeletePurchaseConfirmationModal from "../modals/DeletePurchaseConfirmationModal";
-import EditPurchaseForm from "../modals/EditPurchaseForm";
 import ProductDetailModal from "../modals/ProductDetailModal.jsx";
 import QuickPriceUpdateModal from "../modals/QuickPriceUpdateModal.jsx";
 
-const ModalManager = ({ modal, onClose, data, onDataChange }) => {
+const ModalManager = ({ modal, onClose, data, onDataChange, onOpenModal }) => {
   if (!modal.isOpen) return null;
 
   const renderModalContent = () => {
@@ -24,7 +22,8 @@ const ModalManager = ({ modal, onClose, data, onDataChange }) => {
       case "addEditProduct":
         return (
           <AddEditProductForm
-            productToEdit={modal.data}
+            productToEdit={modal.data?.productToEdit}
+            onProductCreated={modal.data?.onProductCreated} // Callback para o form de compras
             allData={data}
             onClose={onClose}
             onDataChange={onDataChange}
@@ -42,32 +41,17 @@ const ModalManager = ({ modal, onClose, data, onDataChange }) => {
       case "addPurchase":
         return (
           <AddPurchaseForm
-            allData={data}
-            onClose={onClose}
-            onDataChange={onDataChange}
-          />
-        );
-      case "editPurchase":
-        return (
-          <EditPurchaseForm
             purchaseToEdit={modal.data}
             allData={data}
             onClose={onClose}
             onDataChange={onDataChange}
+            onOpenModal={onOpenModal}
           />
         );
       case "deletePurchase":
         return (
           <DeletePurchaseConfirmationModal
             purchase={modal.data}
-            allData={data}
-            onClose={onClose}
-            onDataChange={onDataChange}
-          />
-        );
-      case "addStore":
-        return (
-          <AddStoreForm
             allData={data}
             onClose={onClose}
             onDataChange={onDataChange}
@@ -92,15 +76,14 @@ const ModalManager = ({ modal, onClose, data, onDataChange }) => {
     switch (modal.type) {
       case "deleteConfirmation":
       case "deletePurchase":
-      case "addStore":
       case "quickPriceUpdate":
         return "max-w-lg";
       case "addEditProduct":
         return "max-w-2xl";
       case "productDetail":
-      case "addPurchase":
-      case "editPurchase":
         return "max-w-4xl";
+      case "addPurchase":
+        return "max-w-6xl"; // Aumentado para o novo formulário
       default:
         return "max-w-3xl";
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, Plus, Wrench, BarChart2 } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { useShoppingData } from "./hooks/useShoppingData";
 import Sidebar from "./components/shared/Sidebar.jsx";
 import Toast from "./components/shared/Toast.jsx";
@@ -99,7 +99,9 @@ export default function App() {
           />
         );
       case "galpao":
-        return <Galpao data={data} onOpenModal={openModal} />;
+        return (
+          <Galpao data={data} onOpenModal={openModal} searchTerm={searchTerm} />
+        );
       case "lista":
         return (
           <ShoppingListView
@@ -173,7 +175,9 @@ export default function App() {
               )}
               {["dashboard", "galpao"].includes(activeView) && (
                 <button
-                  onClick={() => openModal("addEditProduct")}
+                  onClick={() =>
+                    openModal("addEditProduct", { productToEdit: null })
+                  }
                   className="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
                 >
                   <Plus size={20} /> Adicionar Produto
@@ -189,6 +193,7 @@ export default function App() {
         onClose={closeModal}
         data={data}
         onDataChange={handleDataChange}
+        onOpenModal={openModal}
       />
     </div>
   );
