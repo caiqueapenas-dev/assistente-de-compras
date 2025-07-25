@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Wrench, BarChart2 } from "lucide-react";
 import { useShoppingData } from "./hooks/useShoppingData";
 import Sidebar from "./components/shared/Sidebar.jsx";
 import Toast from "./components/shared/Toast.jsx";
@@ -8,6 +8,8 @@ import Dashboard from "./views/Dashboard.jsx";
 import Galpao from "./views/Galpao.jsx";
 import ShoppingListView from "./views/ShoppingListView.jsx";
 import History from "./views/History.jsx";
+import Management from "./views/Management.jsx";
+import Analytics from "./views/Analytics.jsx";
 
 export default function App() {
   const {
@@ -17,6 +19,7 @@ export default function App() {
     handleExport,
     handleImport,
     showToast,
+    calculateSuggestion,
   } = useShoppingData();
 
   const [activeView, setActiveView] = useState("dashboard");
@@ -52,6 +55,17 @@ export default function App() {
       return [...prev, { ...product, quantity: 1 }];
     });
     showToast(`${product.name} adicionado à lista!`);
+  };
+
+  const setShoppingListQuantity = (productId, quantity) => {
+    setShoppingList((prev) => {
+      const updatedList = prev.map((item) =>
+        item.id === productId
+          ? { ...item, quantity: Math.max(0, quantity) }
+          : item
+      );
+      return updatedList.filter((item) => item.quantity > 0);
+    });
   };
 
   const updateShoppingListQuantity = (productId, change) => {
@@ -92,10 +106,17 @@ export default function App() {
             data={data}
             shoppingList={shoppingList}
             onUpdateQuantity={updateShoppingListQuantity}
+            onSetQuantity={setShoppingListQuantity}
+            calculateSuggestion={calculateSuggestion}
+            showToast={showToast}
           />
         );
       case "historico":
         return <History data={data} onOpenModal={openModal} />;
+      case "management":
+        return <Management data={data} onDataChange={handleDataChange} />;
+      case "analytics":
+        return <Analytics data={data} />;
       default:
         return (
           <Dashboard
@@ -115,16 +136,19 @@ export default function App() {
         <Sidebar
           activeView={activeView}
           setActiveView={setActiveView}
-          shoppingListBadge={shoppingList.length}
+          shoppingListBadge={shoppingList.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          )}
           onExport={handleExport}
           onImport={handleImport}
           theme={theme}
           toggleTheme={toggleTheme}
         />
         <main className="flex-1 p-4 md:p-6 lg:p-8">
-          {activeView !== "lista" && activeView !== "historico" && (
-            <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-              <div className="relative w-full md:w-1/2">
+          <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            {["dashboard", "galpao"].includes(activeView) && (
+              <div className="relative w-full md:flex-1">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                   size={20}
@@ -137,14 +161,26 @@ export default function App() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <button
-                onClick={() => openModal("addEditProduct")}
-                className="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
-              >
-                <Plus size={20} /> Adicionar Produto
-              </button>
-            </header>
-          )}
+            )}
+            <div className="w-full md:w-auto flex items-center justify-end gap-4">
+              {activeView === "historico" && (
+                <button
+                  onClick={() => openModal("addPurchase")}
+                  className="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+                >
+                  <Plus size={20} /> Adicionar Compra
+                </button>
+              )}
+              {["dashboard", "galpao"].includes(activeView) && (
+                <button
+                  onClick={() => openModal("addEditProduct")}
+                  className="w-full md:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+                >
+                  <Plus size={20} /> Adicionar Produto
+                </button>
+              )}
+            </div>
+          </header>
           {renderView()}
         </main>
       </div>

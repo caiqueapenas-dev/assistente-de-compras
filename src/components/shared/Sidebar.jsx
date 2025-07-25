@@ -6,6 +6,8 @@ import {
   Archive,
   Download,
   Upload,
+  BarChart2,
+  Wrench,
 } from "lucide-react";
 import NavItem from "./NavItem";
 import ThemeSwitcher from "./ThemeSwitcher";
@@ -20,7 +22,7 @@ const Sidebar = ({
   toggleTheme,
 }) => (
   <aside className="w-full md:w-64 bg-white dark:bg-gray-800 p-4 space-y-4 border-b md:border-r border-gray-200 dark:border-gray-700 flex flex-col">
-    <div>
+    <div className="flex-grow">
       <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2 mb-4">
         <ShoppingCart size={28} />
         Compras
@@ -51,6 +53,20 @@ const Sidebar = ({
           active={activeView === "historico"}
           onClick={() => setActiveView("historico")}
         />
+        <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700">
+          <NavItem
+            icon={<BarChart2 size={20} />}
+            text="Análise"
+            active={activeView === "analytics"}
+            onClick={() => setActiveView("analytics")}
+          />
+          <NavItem
+            icon={<Wrench size={20} />}
+            text="Gestão"
+            active={activeView === "management"}
+            onClick={() => setActiveView("management")}
+          />
+        </div>
       </nav>
     </div>
     <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import DATABASE from "../database.json";
 
 export const useShoppingData = () => {
@@ -14,16 +14,13 @@ export const useShoppingData = () => {
 
   const [toast, setToast] = useState({ isVisible: false, message: "" });
 
-  // Autosave a cada 30 segundos
+  // Salva os dados no localStorage sempre que 'data' mudar
   useEffect(() => {
-    const interval = setInterval(() => {
-      try {
-        localStorage.setItem("marketHelperData", JSON.stringify(data));
-      } catch (error) {
-        console.error("Erro ao salvar dados no localStorage", error);
-      }
-    }, 30000);
-    return () => clearInterval(interval);
+    try {
+      localStorage.setItem("marketHelperData", JSON.stringify(data));
+    } catch (error) {
+      console.error("Erro ao salvar dados no localStorage", error);
+    }
   }, [data]);
 
   // Efeito para esconder o Toast Notification
@@ -36,9 +33,9 @@ export const useShoppingData = () => {
     }
   }, [toast]);
 
-  const showToast = (message) => {
+  const showToast = useCallback((message) => {
     setToast({ isVisible: true, message });
-  };
+  }, []);
 
   const handleDataChange = (newData, successMessage) => {
     setData(newData);
@@ -57,6 +54,7 @@ export const useShoppingData = () => {
       new Date().toISOString().split("T")[0]
     }.json`;
     link.click();
+    showToast("Backup exportado com sucesso!");
   };
 
   const handleImport = (event) => {
@@ -69,7 +67,8 @@ export const useShoppingData = () => {
           importedData.products &&
           importedData.stores &&
           importedData.prices &&
-          importedData.purchases
+          importedData.purchases &&
+          importedData.categories
         ) {
           handleDataChange(importedData, "Dados importados com sucesso!");
         } else {
@@ -85,11 +84,32 @@ export const useShoppingData = () => {
     event.target.value = null; // Limpar o input para permitir re-importação do mesmo arquivo
   };
 
+  // Calcula a sugestão de quantidade para um produto
+  const calculateSuggestion = useCallback(
+    (productId) => {
+      const relevantPurchases = data.purchases
+        .flatMap((p) => p.items)
+        .filter((item) => item.productId === productId);
+
+      if (relevantPurchases.length === 0) return 1;
+
+      const last5Purchases = relevantPurchases.slice(-5);
+      const average =
+        last5Purchases.reduce((sum, item) => sum + item.quantity, 0) /
+        last5Purchases.length;
+
+      return Math.round(average) || 1;
+    },
+    [data.purchases]
+  );
+
   return {
     data,
     toast,
     handleDataChange,
     handleExport,
     handleImport,
+    showToast,
+    calculateSuggestion,
   };
 };

@@ -1,11 +1,19 @@
 @import "tailwindcss";
 
-/* Adicione estas classes ao seu src/index.css */
+/* Classes de Botões Globais */
+.btn-primary {
+  @apply bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg transition-colors;
+}
 
 .btn-danger {
   @apply bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors;
 }
 
+/* Animação para Modais */
 @keyframes scaleIn {
   from {
     transform: scale(0.95);
@@ -20,6 +28,7 @@
   animation: scaleIn 0.2s ease-out forwards;
 }
 
+/* Animação para o Toast */
 @keyframes fadeInOut {
   0%,
   100% {

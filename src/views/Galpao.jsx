@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, Clock, ArrowUpDown } from "lucide-react";
+import { Search, Clock, ArrowUpDown, Edit } from "lucide-react";
 
 // Função auxiliar para normalizar strings (remover acentos e converter para minúsculas)
 const normalizeString = (str) => {
@@ -139,7 +139,7 @@ const Galpao = ({ data, onOpenModal }) => {
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
           >
-            Registrados
+            Registrados ({registered.length})
           </button>
           <button
             onClick={() => setActiveTab("nao-registrados")}
@@ -184,34 +184,33 @@ const Galpao = ({ data, onOpenModal }) => {
               >
                 Preço
               </SortableHeader>
-              <SortableHeader
-                column="lastUpdated"
-                sortConfig={sortConfig}
-                setSortConfig={setSortConfig}
-              >
-                Última Atualização
-              </SortableHeader>
+              <th className="p-4 font-semibold">Ações</th>
             </tr>
           </thead>
           <tbody>
             {sortedAndFilteredList.map((product) => (
               <tr
                 key={product.id}
-                className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
-                onClick={() => onOpenModal("productDetail", product)}
+                className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
               >
                 <td className="p-4 flex items-center gap-3">
                   <img
                     src={product.photo}
                     alt={product.name}
-                    className="w-10 h-10 object-cover rounded-md"
+                    className="w-10 h-10 object-cover rounded-md cursor-pointer"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src =
                         "https://placehold.co/100x100/e2e8f0/4a5568?text=Img";
                     }}
+                    onClick={() => onOpenModal("productDetail", product)}
                   />
-                  {product.name}
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => onOpenModal("productDetail", product)}
+                  >
+                    {product.name}
+                  </span>
                 </td>
                 <td className="p-4">{product.brand}</td>
                 <td className="p-4">
@@ -234,9 +233,18 @@ const Galpao = ({ data, onOpenModal }) => {
                   )}
                 </td>
                 <td className="p-4">
-                  {product.lastUpdated
-                    ? new Date(product.lastUpdated).toLocaleDateString()
-                    : "N/A"}
+                  <button
+                    onClick={() =>
+                      onOpenModal("quickPriceUpdate", {
+                        product,
+                        storeId: selectedStoreId,
+                      })
+                    }
+                    className="flex items-center gap-2 text-sm bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900 text-blue-800 dark:text-blue-300 font-semibold py-1 px-3 rounded-lg"
+                  >
+                    <Edit size={14} />{" "}
+                    {product.price !== null ? "Atualizar" : "Registrar"}
+                  </button>
                 </td>
               </tr>
             ))}

@@ -5,6 +5,7 @@ import DeleteConfirmationModal from "../modals/DeleteConfirmationModal";
 import DeletePurchaseConfirmationModal from "../modals/DeletePurchaseConfirmationModal";
 import EditPurchaseForm from "../modals/EditPurchaseForm";
 import ProductDetailModal from "../modals/ProductDetailModal.jsx";
+import QuickPriceUpdateModal from "../modals/QuickPriceUpdateModal.jsx";
 
 const ModalManager = ({ modal, onClose, data, onDataChange }) => {
   if (!modal.isOpen) return null;
@@ -72,6 +73,16 @@ const ModalManager = ({ modal, onClose, data, onDataChange }) => {
             onDataChange={onDataChange}
           />
         );
+      case "quickPriceUpdate":
+        return (
+          <QuickPriceUpdateModal
+            product={modal.data.product}
+            storeId={modal.data.storeId}
+            allData={data}
+            onClose={onClose}
+            onDataChange={onDataChange}
+          />
+        );
       default:
         return null;
     }
@@ -82,6 +93,7 @@ const ModalManager = ({ modal, onClose, data, onDataChange }) => {
       case "deleteConfirmation":
       case "deletePurchase":
       case "addStore":
+      case "quickPriceUpdate":
         return "max-w-lg";
       case "addEditProduct":
         return "max-w-2xl";

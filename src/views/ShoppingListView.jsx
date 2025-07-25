@@ -1,7 +1,14 @@
 import { useMemo } from "react";
-import { Plus, Minus, DollarSign } from "lucide-react";
+import { Plus, Minus, DollarSign, Lightbulb } from "lucide-react";
 
-const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
+const ShoppingListView = ({
+  data,
+  shoppingList,
+  onUpdateQuantity,
+  onSetQuantity,
+  calculateSuggestion,
+  showToast,
+}) => {
   const { optimalList, savings, totalOptimalCost } = useMemo(() => {
     if (shoppingList.length === 0)
       return { optimalList: {}, savings: [], totalOptimalCost: 0 };
@@ -30,7 +37,7 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
         optimal[storeName].total += bestPrice.price * item.quantity;
         totalCost += bestPrice.price * item.quantity;
       } else {
-        const unknownStore = "Mercado não encontrado";
+        const unknownStore = "Preço não cadastrado";
         if (!optimal[unknownStore])
           optimal[unknownStore] = { storeId: null, items: [], total: 0 };
         optimal[unknownStore].items.push({ ...item, unitPrice: 0 });
@@ -57,7 +64,7 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
           };
         return null;
       })
-      .filter((s) => s !== null);
+      .filter((s) => s !== null && s.saved > 0.01);
 
     return {
       optimalList: optimal,
@@ -66,12 +73,18 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
     };
   }, [data, shoppingList]);
 
+  const handleSuggestion = (productId) => {
+    const suggestedQuantity = calculateSuggestion(productId);
+    onSetQuantity(productId, suggestedQuantity);
+    showToast(`Sugestão para este item: ${suggestedQuantity} unidade(s)`);
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">Lista de Compras</h2>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-4">
-          <h3 className="font-semibold text-lg">Itens</h3>
+          <h3 className="font-semibold text-lg">Itens na Lista</h3>
           {shoppingList.length === 0 ? (
             <p className="text-gray-500">
               Adicione produtos do dashboard para começar.
@@ -88,6 +101,13 @@ const ShoppingListView = ({ data, shoppingList, onUpdateQuantity }) => {
                     <p className="text-sm text-gray-500">{item.brand}</p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleSuggestion(item.id)}
+                      className="p-1 rounded-full text-yellow-500 hover:bg-yellow-100 dark:hover:bg-yellow-900/50"
+                      title="Sugerir quantidade com base no histórico"
+                    >
+                      <Lightbulb size={16} />
+                    </button>
                     <button
                       onClick={() => onUpdateQuantity(item.id, -1)}
                       className="p-1 rounded-full bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"

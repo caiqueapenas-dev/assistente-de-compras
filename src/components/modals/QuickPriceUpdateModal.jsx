@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const QuickPriceUpdateModal = ({
   product,
@@ -10,43 +10,67 @@ const QuickPriceUpdateModal = ({
   const [price, setPrice] = useState("");
   const storeName = allData.stores.find((s) => s.id === storeId)?.name || "";
 
+  useEffect(() => {
+    const existingPrice = allData.prices.find(
+      (p) => p.productId === product.id && p.storeId === storeId
+    );
+    if (existingPrice) {
+      setPrice(existingPrice.price.toString());
+    }
+  }, [product, storeId, allData.prices]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const newPrice = parseFloat(price);
-    if (!newPrice || newPrice <= 0) {
+    if (isNaN(newPrice) || newPrice <= 0) {
       alert("Por favor, insira um preço válido.");
       return;
     }
 
-    const newPriceEntry = {
-      productId: product.id,
-      storeId,
-      price: newPrice,
-      lastUpdated: new Date().toISOString(),
-    };
+    const priceIndex = allData.prices.findIndex(
+      (p) => p.productId === product.id && p.storeId === storeId
+    );
 
-    // Adiciona o novo preço, não substitui toda a lista
-    const updatedPrices = [...allData.prices, newPriceEntry];
+    let updatedPrices = [...allData.prices];
+
+    if (priceIndex > -1) {
+      // Atualiza o preço existente
+      updatedPrices[priceIndex] = {
+        ...updatedPrices[priceIndex],
+        price: newPrice,
+        lastUpdated: new Date().toISOString(),
+      };
+    } else {
+      // Adiciona um novo registro de preço
+      updatedPrices.push({
+        productId: product.id,
+        storeId: storeId,
+        price: newPrice,
+        lastUpdated: new Date().toISOString(),
+      });
+    }
 
     onDataChange(
       { ...allData, prices: updatedPrices },
-      "Preço registrado com sucesso!"
+      "Preço atualizado com sucesso!"
     );
     onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6">
-      <h2 className="text-2xl font-semibold mb-2">Registo Rápido de Preço</h2>
-      <p className="mb-4">
-        Produto:{" "}
-        <span className="font-bold">
-          {product.name} ({product.brand})
-        </span>
-        <br />
-        Mercado: <span className="font-bold">{storeName}</span>
-      </p>
-      <div>
+    <form onSubmit={handleSubmit} className="overflow-hidden">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-semibold">Atualizar Preço</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Produto:{" "}
+          <span className="font-medium">
+            {product.name} ({product.brand})
+          </span>
+          <br />
+          Mercado: <span className="font-medium">{storeName}</span>
+        </p>
+      </div>
+      <div className="p-6">
         <label htmlFor="quick-price" className="block text-sm font-medium mb-1">
           Novo Preço (R$)
         </label>
@@ -63,18 +87,11 @@ const QuickPriceUpdateModal = ({
           autoFocus
         />
       </div>
-      <div className="mt-6 flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={onClose}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors"
-        >
+      <div className="bg-gray-50 dark:bg-gray-900/50 p-4 flex justify-end gap-3 rounded-b-lg border-t border-gray-200 dark:border-gray-700">
+        <button type="button" onClick={onClose} className="btn-secondary">
           Cancelar
         </button>
-        <button
-          type="submit"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-        >
+        <button type="submit" className="btn-primary">
           Salvar Preço
         </button>
       </div>
