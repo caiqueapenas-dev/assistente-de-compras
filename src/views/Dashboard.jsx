@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Plus, Clock } from "lucide-react";
+import { formatCurrency } from "../utils/formatters"; // Importando o formatador
 
-// Função auxiliar para normalizar strings (remover acentos e converter para minúsculas)
+// Função auxiliar para normalizar strings
 const normalizeString = (str) => {
   if (!str) return "";
   return str
@@ -48,7 +49,7 @@ const Dashboard = ({ data, searchTerm, onAddToShoppingList, onOpenModal }) => {
           return (
             <div
               key={product.id}
-              onClick={() => onOpenModal("productDetail", product)}
+              onClick={() => onOpenModal("productDetail", product)} // <<-- CORREÇÃO AQUI
               className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105 cursor-pointer flex flex-col"
             >
               <img
@@ -57,8 +58,7 @@ const Dashboard = ({ data, searchTerm, onAddToShoppingList, onOpenModal }) => {
                 className="w-full h-48 object-cover"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src =
-                    "https://placehold.co/100x100/e2e8f0/4a5568?text=Imagem";
+                  e.target.src = `https://placehold.co/100x100/e2e8f0/4a5568?text=Imagem`;
                 }}
               />
               <div className="p-4 flex-grow">
@@ -73,7 +73,7 @@ const Dashboard = ({ data, searchTerm, onAddToShoppingList, onOpenModal }) => {
                   <p className="text-xs mt-2 text-gray-500">
                     Mais barato em{" "}
                     <span className="text-green-600 dark:text-green-400 font-semibold">
-                      {cheapestStore.name} (R$ {cheapest.price.toFixed(2)})
+                      {cheapestStore.name} ({formatCurrency(cheapest.price)})
                     </span>
                   </p>
                 )}
@@ -88,7 +88,7 @@ const Dashboard = ({ data, searchTerm, onAddToShoppingList, onOpenModal }) => {
               <div className="p-2 bg-gray-50 dark:bg-gray-700/50 flex justify-end items-center">
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // Impede que o clique no botão abra o modal
+                    e.stopPropagation();
                     onAddToShoppingList(product);
                   }}
                   className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-1 px-3 rounded-lg text-sm flex items-center gap-1"

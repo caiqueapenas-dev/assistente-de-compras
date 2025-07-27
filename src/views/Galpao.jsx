@@ -1,107 +1,57 @@
 import { useState, useMemo } from "react";
-import { Search, Clock, ArrowUpDown, Edit } from "lucide-react";
+import { Search, Edit } from "lucide-react";
 
-// Função auxiliar para normalizar strings (remover acentos e converter para minúsculas)
-const normalizeString = (str) => {
-  if (!str) return "";
-  return str
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-};
-
-const SortableHeader = ({ children, column, sortConfig, setSortConfig }) => {
-  const isSorted = sortConfig.key === column;
-  const direction = isSorted ? sortConfig.direction : "asc";
-
-  const handleClick = () => {
-    setSortConfig({
-      key: column,
-      direction: direction === "asc" ? "desc" : "asc",
-    });
-  };
-
-  return (
-    <th
-      className="p-4 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
-      onClick={handleClick}
-    >
-      <div className="flex items-center gap-2">
-        {children}
-        {isSorted && <ArrowUpDown size={14} />}
-      </div>
-    </th>
-  );
-};
-
-const Galpao = ({ data, onOpenModal }) => {
+const Galpao = ({ data, onOpenModal, searchTerm }) => {
   const [selectedStoreId, setSelectedStoreId] = useState(data.stores[0]?.id);
-  const [activeTab, setActiveTab] = useState("registrados");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState({
-    key: "name",
-    direction: "asc",
-  });
+
+  // Filtra os produtos com base na pesquisa e no mercado selecionado
+  const filteredProducts = useMemo(() => {
+    if (!selectedStoreId) return [];
+
+    const normalizedSearch = searchTerm
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    return data.products
+      .map((product) => {
+        const priceInfo = data.prices.find(
+          (p) => p.productId === product.id && p.storeId === selectedStoreId
+        );
+        return {
+          ...product,
+          price: priceInfo ? priceInfo.price : null,
+          lastUpdated: priceInfo ? priceInfo.lastUpdated : null,
+        };
+      })
+      .filter(
+        (p) =>
+          p.name
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .includes(normalizedSearch) ||
+          p.brand
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .includes(normalizedSearch)
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [data, selectedStoreId, searchTerm]);
 
   const { registered, unregistered } = useMemo(() => {
-    if (!selectedStoreId) return { registered: [], unregistered: [] };
-
-    const reg = [];
-    const unreg = [];
-
-    data.products.forEach((product) => {
-      const priceInfo = data.prices.find(
-        (p) => p.productId === product.id && p.storeId === selectedStoreId
-      );
-      if (priceInfo) {
-        const isOutdated =
-          (new Date() - new Date(priceInfo.lastUpdated)) /
-            (1000 * 60 * 60 * 24 * 30) >
-          2;
-        reg.push({
-          ...product,
-          price: priceInfo.price,
-          lastUpdated: priceInfo.lastUpdated,
-          isOutdated,
-        });
-      } else {
-        unreg.push({
-          ...product,
-          price: null,
-          lastUpdated: null,
-          isOutdated: false,
-        });
-      }
-    });
-
+    const reg = filteredProducts.filter((p) => p.price !== null);
+    const unreg = filteredProducts.filter((p) => p.price === null);
     return { registered: reg, unregistered: unreg };
-  }, [data, selectedStoreId]);
+  }, [filteredProducts]);
 
-  const sortedAndFilteredList = useMemo(() => {
-    const listToDisplay =
-      activeTab === "registrados" ? registered : unregistered;
-    const normalizedSearch = normalizeString(searchTerm);
+  const [activeTab, setActiveTab] = useState("registrados");
 
-    const filtered = listToDisplay.filter(
-      (p) =>
-        normalizeString(p.name).includes(normalizedSearch) ||
-        normalizeString(p.brand).includes(normalizedSearch)
-    );
-
-    return filtered.sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-  }, [activeTab, registered, unregistered, searchTerm, sortConfig]);
+  const listToDisplay = activeTab === "registrados" ? registered : unregistered;
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">Galpão por Mercado</h2>
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <select
           value={selectedStoreId}
@@ -114,19 +64,6 @@ const Galpao = ({ data, onOpenModal }) => {
             </option>
           ))}
         </select>
-        <div className="relative flex-grow">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={20}
-          />
-          <input
-            type="text"
-            placeholder="Pesquisar..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
       </div>
 
       <div className="border-b border-gray-200 dark:border-gray-700 mb-4">
@@ -163,32 +100,14 @@ const Galpao = ({ data, onOpenModal }) => {
         <table className="w-full text-left">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <SortableHeader
-                column="name"
-                sortConfig={sortConfig}
-                setSortConfig={setSortConfig}
-              >
-                Produto
-              </SortableHeader>
-              <SortableHeader
-                column="brand"
-                sortConfig={sortConfig}
-                setSortConfig={setSortConfig}
-              >
-                Marca
-              </SortableHeader>
-              <SortableHeader
-                column="price"
-                sortConfig={sortConfig}
-                setSortConfig={setSortConfig}
-              >
-                Preço
-              </SortableHeader>
+              <th className="p-4 font-semibold">Produto</th>
+              <th className="p-4 font-semibold">Marca</th>
+              <th className="p-4 font-semibold">Preço</th>
               <th className="p-4 font-semibold">Ações</th>
             </tr>
           </thead>
           <tbody>
-            {sortedAndFilteredList.map((product) => (
+            {listToDisplay.map((product) => (
               <tr
                 key={product.id}
                 className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
@@ -198,11 +117,6 @@ const Galpao = ({ data, onOpenModal }) => {
                     src={product.photo}
                     alt={product.name}
                     className="w-10 h-10 object-cover rounded-md cursor-pointer"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src =
-                        "https://placehold.co/100x100/e2e8f0/4a5568?text=Img";
-                    }}
                     onClick={() => onOpenModal("productDetail", product)}
                   />
                   <span
@@ -215,35 +129,19 @@ const Galpao = ({ data, onOpenModal }) => {
                 <td className="p-4">{product.brand}</td>
                 <td className="p-4">
                   {product.price !== null ? (
-                    <span
-                      className={`flex items-center gap-2 ${
-                        product.isOutdated ? "text-yellow-500" : ""
-                      }`}
-                    >
-                      R$ {product.price.toFixed(2)}
-                      {product.isOutdated && (
-                        <Clock
-                          size={16}
-                          title="Preço desatualizado (mais de 2 meses)"
-                        />
-                      )}
-                    </span>
+                    `R$ ${product.price.toFixed(2)}`
                   ) : (
-                    <span className="text-gray-400 italic">Não registrado</span>
+                    <span className="text-gray-400 italic">N/A</span>
                   )}
                 </td>
                 <td className="p-4">
                   <button
                     onClick={() =>
-                      onOpenModal("quickPriceUpdate", {
-                        product,
-                        storeId: selectedStoreId,
-                      })
-                    }
+                      onOpenModal("addEditProduct", { productToEdit: product })
+                    } // <<-- LÓGICA ALTERADA AQUI
                     className="flex items-center gap-2 text-sm bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900 text-blue-800 dark:text-blue-300 font-semibold py-1 px-3 rounded-lg"
                   >
-                    <Edit size={14} />{" "}
-                    {product.price !== null ? "Atualizar" : "Registrar"}
+                    <Edit size={14} /> Editar / Atualizar
                   </button>
                 </td>
               </tr>

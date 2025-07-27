@@ -1,12 +1,56 @@
-import { useState } from "react";
-import { Plus, Trash2, Edit, Save, X } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Trash2, Edit, Save, X, GitMerge } from "lucide-react";
 
-const Management = ({ data, onDataChange }) => {
+// Função para simplificar strings para comparação
+const simplifyString = (str) => {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+};
+
+const Management = ({ data, onDataChange, onOpenModal }) => {
   const { stores, categories, products, purchases } = data;
+  const [activeTab, setActiveTab] = useState("stores"); // stores, categories, duplicates
   const [newStoreName, setNewStoreName] = useState("");
   const [newCategoryName, setNewCategoryName] = useState("");
   const [editingStore, setEditingStore] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
+
+  const potentialDuplicates = useMemo(() => {
+    const duplicates = [];
+    const productList = [...products];
+
+    for (let i = 0; i < productList.length; i++) {
+      for (let j = i + 1; j < productList.length; j++) {
+        const productA = productList[i];
+        const productB = productList[j];
+
+        const nameA = simplifyString(productA.name);
+        const nameB = simplifyString(productB.name);
+        const brandA = simplifyString(productA.brand);
+        const brandB = simplifyString(productB.brand);
+
+        // Critério de duplicata: nomes se contêm e marcas se contêm
+        if (
+          (nameA.includes(nameB) || nameB.includes(nameA)) &&
+          (brandA.includes(brandB) || brandB.includes(brandA))
+        ) {
+          // Evita adicionar o mesmo par invertido
+          if (
+            !duplicates.some(
+              (pair) => pair.includes(productA) && pair.includes(productB)
+            )
+          ) {
+            duplicates.push([productA, productB]);
+          }
+        }
+      }
+    }
+    return duplicates;
+  }, [products]);
 
   const handleAddStore = (e) => {
     e.preventDefault();
@@ -32,15 +76,11 @@ const Management = ({ data, onDataChange }) => {
     const isStoreInUse = purchases.some((p) => p.storeId === storeId);
     if (isStoreInUse) {
       alert(
-        "Este mercado não pode ser removido pois está associado a compras no histórico. Remova ou edite as compras primeiro."
+        "Este mercado não pode ser removido pois está associado a compras no histórico."
       );
       return;
     }
-    if (
-      window.confirm(
-        "Tem certeza que deseja remover este mercado? A ação não pode ser desfeita."
-      )
-    ) {
+    if (window.confirm("Tem certeza? A ação não pode ser desfeita.")) {
       const newStores = data.stores.filter((s) => s.id !== storeId);
       const newPrices = data.prices.filter((p) => p.storeId !== storeId);
       onDataChange(
@@ -83,15 +123,11 @@ const Management = ({ data, onDataChange }) => {
     const isCategoryInUse = products.some((p) => p.category === categoryName);
     if (isCategoryInUse) {
       alert(
-        "Esta categoria não pode ser removida pois está em uso por produtos cadastrados. Altere a categoria dos produtos primeiro."
+        "Esta categoria não pode ser removida pois está em uso por produtos."
       );
       return;
     }
-    if (
-      window.confirm(
-        "Tem certeza que deseja remover esta categoria? A ação não pode ser desfeita."
-      )
-    ) {
+    if (window.confirm("Tem certeza? A ação não pode ser desfeita.")) {
       const newCategories = data.categories.filter((c) => c !== categoryName);
       onDataChange(
         { ...data, categories: newCategories },
@@ -100,11 +136,44 @@ const Management = ({ data, onDataChange }) => {
     }
   };
 
+  const TabButton = ({ tabName, label, count }) => (
+    <button
+      onClick={() => setActiveTab(tabName)}
+      className={`${
+        activeTab === tabName
+          ? "border-indigo-500 text-indigo-600"
+          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+      } flex items-center gap-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+    >
+      {label}
+      {count > 0 && (
+        <span className="bg-indigo-100 text-indigo-600 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+          {count}
+        </span>
+      )}
+    </button>
+  );
+
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-6">Gestão de Dados</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Gestão de Mercados */}
+      <h2 className="text-2xl font-semibold mb-2">Gestão de Dados</h2>
+      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          <TabButton tabName="stores" label="Mercados" count={stores.length} />
+          <TabButton
+            tabName="categories"
+            label="Categorias"
+            count={categories.length}
+          />
+          <TabButton
+            tabName="duplicates"
+            label="Duplicatas"
+            count={potentialDuplicates.length}
+          />
+        </nav>
+      </div>
+
+      {activeTab === "stores" && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h3 className="text-xl font-bold mb-4">Mercados</h3>
           <form onSubmit={handleAddStore} className="flex gap-2 mb-4">
@@ -175,8 +244,9 @@ const Management = ({ data, onDataChange }) => {
             ))}
           </ul>
         </div>
+      )}
 
-        {/* Gestão de Categorias */}
+      {activeTab === "categories" && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h3 className="text-xl font-bold mb-4">Categorias</h3>
           <form onSubmit={handleAddCategory} className="flex gap-2 mb-4">
@@ -252,7 +322,59 @@ const Management = ({ data, onDataChange }) => {
             ))}
           </ul>
         </div>
-      </div>
+      )}
+
+      {activeTab === "duplicates" && (
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <h3 className="text-xl font-bold mb-4">
+            Potenciais Duplicatas Encontradas
+          </h3>
+          {potentialDuplicates.length === 0 ? (
+            <p className="text-gray-500">
+              Nenhum produto duplicado encontrado. Tudo certo!
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {potentialDuplicates.map(([productA, productB], index) => (
+                <div
+                  key={index}
+                  className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col md:flex-row justify-between items-center gap-4"
+                >
+                  <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="text-sm">
+                      <p className="font-bold">{productA.name}</p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {productA.brand}
+                      </p>
+                      <p className="text-xs bg-gray-200 dark:bg-gray-600 inline-block px-2 py-0.5 rounded-full mt-1">
+                        {productA.category}
+                      </p>
+                    </div>
+                    <div className="text-sm">
+                      <p className="font-bold">{productB.name}</p>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        {productB.brand}
+                      </p>
+                      <p className="text-xs bg-gray-200 dark:bg-gray-600 inline-block px-2 py-0.5 rounded-full mt-1">
+                        {productB.category}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      onOpenModal("mergeDuplicates", { productA, productB })
+                    }
+                    className="btn-primary flex-shrink-0 flex items-center gap-2"
+                  >
+                    <GitMerge size={18} />
+                    Unificar
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
